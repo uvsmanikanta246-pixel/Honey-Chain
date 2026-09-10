@@ -49,11 +49,11 @@
   --spacing-2xl: 6rem;              /* 96px */
 
   /* --- Sizing & Layout --- */
-  --max-content-width: 520px;       /* Focused single-column layout */
-  --button-height: 64px;            /* Extra large touch target for outdoor/field use */
-  --input-height: 64px;             /* Large touch-friendly input */
-  --border-radius-btn: 20px;        /* Soft, approachable rounded corners */
-  --border-radius-input: 18px;      /* Soft rounded inputs */
+  --max-content-width: 480px;       /* Focused compact single-column layout */
+  --button-height: 44px;            /* Sleek, comfortable height */
+  --input-height: 44px;             /* Compact, clean input bar */
+  --border-radius-btn: 12px;        /* Sleek modern rounded corners */
+  --border-radius-input: 12px;      /* Sleek modern rounded inputs */
 
   /* Shadows: Explicitly NONE as per design rules */
   --box-shadow: none;
@@ -541,7 +541,7 @@ p, .hc-body {
   background-color: var(--color-accent);
   color: var(--color-accent-contrast);
   font-family: var(--font-family);
-  font-size: var(--font-size-btn);
+  font-size: 1rem;
   font-weight: var(--font-weight-bold);
   line-height: 1;
   border: none;
@@ -550,8 +550,8 @@ p, .hc-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-xs);
+  padding: 8px 16px;
   text-decoration: none;
   text-align: center;
   transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s ease;
@@ -579,17 +579,17 @@ p, .hc-body {
   background-color: transparent;
   color: var(--color-text);
   font-family: var(--font-family);
-  font-size: var(--font-size-btn);
+  font-size: 1rem;
   font-weight: var(--font-weight-bold);
   line-height: 1;
-  border: 2px solid var(--color-text);
+  border: 1.5px solid var(--color-text);
   border-radius: var(--border-radius-btn);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-xs);
+  padding: 8px 16px;
   text-decoration: none;
   text-align: center;
   transition: background-color 0.2s ease, transform 0.12s ease;
@@ -662,12 +662,13 @@ p, .hc-body {
 .hc-select {
   width: 100%;
   min-height: var(--input-height);
+  height: var(--input-height);
   background-color: var(--color-input-bg);
-  border: 2.5px solid var(--color-border-input);
+  border: 1.5px solid var(--color-border-input);
   border-radius: var(--border-radius-input);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 6px 14px;
   font-family: var(--font-family);
-  font-size: var(--font-size-base);
+  font-size: 0.95rem;
   color: var(--color-text);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -676,7 +677,7 @@ p, .hc-body {
 .hc-input:focus,
 .hc-select:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 4px rgba(232, 137, 43, 0.18);
+  box-shadow: 0 0 0 3px rgba(232, 137, 43, 0.16);
 }
 
 .hc-input::placeholder {

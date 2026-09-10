@@ -1504,12 +1504,15 @@ function SupplyChainManagerView({ onNavigate, currentUser }) {
       {/* Form */}
       <form onSubmit={handleAddEvent} style={{ 
         background: "var(--color-input-bg)", 
-        border: "2.5px solid var(--color-border-input)", 
-        borderRadius: 20, 
-        padding: 20,
+        border: "1.5px solid var(--color-border-input)", 
+        borderRadius: 16, 
+        padding: 16,
         display: "flex",
         flexDirection: "column",
-        gap: 12
+        gap: 10,
+        maxWidth: 480,
+        margin: "0 auto",
+        width: "100%"
       }}>
         <div>
           <label className="hc-provenance-label">Target Batch ID</label>
