@@ -101,6 +101,7 @@ h1, .hc-h1 {
   color: var(--color-text);
   letter-spacing: -0.02em;
   margin-bottom: var(--spacing-sm);
+  text-align: center;
 }
 
 h2, .hc-h2 {
@@ -109,6 +110,32 @@ h2, .hc-h2 {
   line-height: var(--line-height-heading);
   color: var(--color-text);
   margin-bottom: var(--spacing-sm);
+  text-align: center;
+}
+
+.hc-tagline {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.hc-section-intro {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.hc-section-desc {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 540px;
+  margin: 0 auto var(--spacing-md) auto;
 }
 
 h3, .hc-h3 {

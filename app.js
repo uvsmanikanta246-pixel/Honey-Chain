@@ -376,46 +376,93 @@ function HoneyChainApp() {
 
   return (
     <div className="hc-app-container">
-      {/* Header */}
+      {/* Enhanced Header with Individual Sections */}
       <header className="hc-header">
-        <div 
-          className="hc-brand" 
-          onClick={() => setCurrentView("landing")} 
-          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
-        >
-          <img src="logo.svg" alt="HoneyChain Logo" style={{ width: 34, height: 34 }} />
-          <span style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text)" }}>
-            {t("brand_title")}
-          </span>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Firebase Connection Status Pill */}
-          <button 
-            type="button"
-            className={`hc-firebase-pill ${firebaseConnected ? "connected" : ""}`}
-            onClick={() => setFirebaseModalOpen(true)}
-            title="Click to view/configure Firebase connection"
+        <div className="hc-header-inner">
+          {/* Brand */}
+          <div 
+            className="hc-brand" 
+            onClick={() => setCurrentView("landing")} 
+            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
           >
-            🔥 {firebaseConnected ? "Firebase Live" : "Firebase Ready"}
-          </button>
+            <img src="logo.svg" alt="HoneyChain Logo" style={{ width: 34, height: 34 }} />
+            <span style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text)" }}>
+              {t("brand_title")}
+            </span>
+          </div>
 
-          {/* Language Switcher */}
-          <button 
-            type="button" 
-            className="hc-lang-toggle"
-            onClick={() => setLang(lang === "en" ? "hi" : "en")}
-            style={{ 
-              background: "transparent", 
-              border: "2px solid var(--color-border-input)", 
-              borderRadius: "14px", 
-              padding: "6px 12px", 
-              fontWeight: 600, 
-              cursor: "pointer" 
-            }}
-          >
-            {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 English"}
-          </button>
+          {/* Individual Navigation Sections */}
+          <nav className="hc-nav-sections">
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "landing" ? "active" : ""}`}
+              onClick={() => setCurrentView("landing")}
+            >
+              🏠 {t("nav_home")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "verify" ? "active" : ""}`}
+              onClick={() => setCurrentView("verify")}
+            >
+              🔍 {t("nav_verify_honey")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "my-batches" || currentView === "record" || currentView === "register" ? "active" : ""}`}
+              onClick={() => setCurrentView("my-batches")}
+            >
+              🐝 {t("nav_my_batches")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "supply-chain" ? "active" : ""}`}
+              onClick={() => setCurrentView("supply-chain")}
+            >
+              🚚 {t("nav_supply_chain")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "admin" || currentView === "admin-login" ? "active" : ""}`}
+              onClick={() => setCurrentView(userRole === "admin" ? "admin" : "admin-login")}
+            >
+              📊 {t("nav_admin")}
+            </button>
+          </nav>
+
+          {/* Right Action Tools: Firebase Status & Language Toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* Firebase Connection Status Pill */}
+            <button 
+              type="button"
+              className={`hc-firebase-pill ${firebaseConnected ? "connected" : ""}`}
+              onClick={() => setFirebaseModalOpen(true)}
+              title="Click to view/configure Firebase connection"
+            >
+              🔥 {firebaseConnected ? "Firebase Live" : "Firebase Ready"}
+            </button>
+
+            {/* Language Switcher */}
+            <button 
+              type="button" 
+              className="hc-lang-toggle"
+              onClick={() => setLang(lang === "en" ? "hi" : "en")}
+              style={{ 
+                background: "transparent", 
+                border: "2px solid var(--color-border-input)", 
+                borderRadius: "14px", 
+                padding: "6px 12px", 
+                fontWeight: 600, 
+                cursor: "pointer" 
+              }}
+            >
+              {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 English"}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -520,12 +567,12 @@ function LandingView({ onNavigate, userRole, setUserRole }) {
   const { t } = useTranslation();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.3s ease" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.3s ease", textAlign: "center" }}>
       <span className="hc-tagline">{t("landing_tagline")}</span>
-      <h1 style={{ fontSize: "var(--font-size-h1)", lineHeight: 1.25, margin: "4px 0" }}>
+      <h1 style={{ fontSize: "var(--font-size-h1)", lineHeight: 1.25, margin: "4px 0", textAlign: "center" }}>
         {t("landing_title")}
       </h1>
-      <p style={{ color: "var(--color-text-muted)", fontSize: "var(--font-size-base)", lineHeight: 1.5 }}>
+      <p style={{ color: "var(--color-text-muted)", fontSize: "var(--font-size-base)", lineHeight: 1.5, textAlign: "center", maxWidth: "540px", margin: "0 auto" }}>
         {t("landing_desc")}
       </p>
 
@@ -545,7 +592,7 @@ function LandingView({ onNavigate, userRole, setUserRole }) {
       </div>
 
       {/* Action Buttons for Roles */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "var(--spacing-sm)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "var(--spacing-sm)", maxWidth: "460px", margin: "var(--spacing-sm) auto 0 auto", width: "100%" }}>
         {/* Customer Instant Verification (No Login) */}
         <button 
           type="button" 
@@ -1023,17 +1070,15 @@ function MyBatchesView({ activeBeekeeper, onRecordNew, onOpenQr, onNavigate }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <span className="hc-tagline">{t("my_batches_tagline")}</span>
-          <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>{t("my_batches_title")}</h1>
-          <p style={{ color: "var(--color-text-muted)", margin: "4px 0" }}>
-            {activeBeekeeper?.name} ({activeBeekeeper?.beekeeperId}) • {activeBeekeeper?.farmLocation}
-          </p>
-        </div>
+      <div style={{ textAlign: "center", marginBottom: "var(--spacing-xs)" }}>
+        <span className="hc-tagline">{t("my_batches_tagline")}</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>{t("my_batches_title")}</h1>
+        <p style={{ color: "var(--color-text-muted)", margin: "4px auto", textAlign: "center", maxWidth: "520px" }}>
+          {activeBeekeeper?.name} ({activeBeekeeper?.beekeeperId}) • {activeBeekeeper?.farmLocation}
+        </p>
       </div>
 
-      <button type="button" className="hc-button-primary" onClick={onRecordNew}>
+      <button type="button" className="hc-button-primary" onClick={onRecordNew} style={{ maxWidth: "460px", margin: "0 auto", width: "100%" }}>
         {t("my_batches_btn_record_new")}
       </button>
 
@@ -1130,9 +1175,11 @@ function ConsumerVerificationView({ initialCode = "", onNavigate }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
-      <span className="hc-tagline">Authentic Honey Origin</span>
-      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>{t("lookup_title")}</h1>
-      <p style={{ color: "var(--color-text-muted)" }}>{t("lookup_desc")}</p>
+      <div style={{ textAlign: "center" }}>
+        <span className="hc-tagline">Authentic Honey Origin</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>{t("lookup_title")}</h1>
+        <p style={{ color: "var(--color-text-muted)", textAlign: "center", maxWidth: "540px", margin: "0 auto" }}>{t("lookup_desc")}</p>
+      </div>
 
       {/* Code Input */}
       <div style={{ display: "flex", gap: "8px" }}>
@@ -1155,7 +1202,7 @@ function ConsumerVerificationView({ initialCode = "", onNavigate }) {
       </div>
 
       {/* Sample Codes */}
-      <div style={{ fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
+      <div style={{ fontSize: "0.9rem", color: "var(--color-text-muted)", textAlign: "center" }}>
         💡 {t("lookup_sample_codes")}{" "}
         <button 
           type="button" 
@@ -1202,7 +1249,7 @@ function ConsumerVerificationView({ initialCode = "", onNavigate }) {
 
               {/* Provenance Details */}
               <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8 }}>
+                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8, textAlign: "center" }}>
                   🍯 Honey Harvest Origin
                 </h3>
 
@@ -1238,7 +1285,7 @@ function ConsumerVerificationView({ initialCode = "", onNavigate }) {
 
               {/* Full Supply Chain Journey Timeline */}
               <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8 }}>
+                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8, textAlign: "center" }}>
                   🚚 Supply Chain Custody Timeline
                 </h3>
 
@@ -1256,7 +1303,7 @@ function ConsumerVerificationView({ initialCode = "", onNavigate }) {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem" }}>
+                  <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", textAlign: "center" }}>
                     Genesis batch record verified at apiary origin.
                   </p>
                 )}
@@ -1333,11 +1380,13 @@ function SupplyChainManagerView({ onNavigate, currentUser }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
-      <span className="hc-tagline">Logistics & Custody</span>
-      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Supply Chain Custody</h1>
-      <p style={{ color: "var(--color-text-muted)" }}>
-        Log cold-chain transit, laboratory quality gates, warehouse arrivals, and retail shelf placements in Firestore.
-      </p>
+      <div style={{ textAlign: "center" }}>
+        <span className="hc-tagline">Logistics & Custody</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>Supply Chain Custody</h1>
+        <p style={{ color: "var(--color-text-muted)", textAlign: "center", maxWidth: "540px", margin: "0 auto" }}>
+          Log cold-chain transit, laboratory quality gates, warehouse arrivals, and retail shelf placements in Firestore.
+        </p>
+      </div>
 
       {/* Form */}
       <form onSubmit={handleAddEvent} style={{ 
@@ -1435,7 +1484,7 @@ function SupplyChainManagerView({ onNavigate, currentUser }) {
 
       {/* Recent Activity */}
       <div>
-        <h3 style={{ fontSize: "1.2rem", margin: "16px 0 8px 0" }}>Recent Supply Chain Milestones</h3>
+        <h3 style={{ fontSize: "1.2rem", margin: "16px 0 8px 0", textAlign: "center" }}>Recent Supply Chain Milestones</h3>
         <div className="hc-timeline">
           {recentEvents.map((evt, idx) => (
             <div key={evt.eventId || idx} className="hc-timeline-item">
@@ -1479,14 +1528,16 @@ function AdminLoginView({ onSuccess, onCancel }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
-      <span className="hc-tagline">Security & Management</span>
-      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Admin Portal Login</h1>
-      <p style={{ color: "var(--color-text-muted)" }}>
-        Sign in to view real-time system metrics, manage beekeeper identities, and inspect public verification audits.
-      </p>
+      <div style={{ textAlign: "center" }}>
+        <span className="hc-tagline">Security & Management</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>Admin Portal Login</h1>
+        <p style={{ color: "var(--color-text-muted)", textAlign: "center", maxWidth: "520px", margin: "0 auto" }}>
+          Sign in to view real-time system metrics, manage beekeeper identities, and inspect public verification audits.
+        </p>
+      </div>
 
       {error && (
-        <div style={{ background: "#FDEDEC", color: "#922B21", padding: "12px 16px", borderRadius: 12 }}>
+        <div style={{ background: "#FDEDEC", color: "#922B21", padding: "12px 16px", borderRadius: 12, textAlign: "center" }}>
           ⚠️ {error}
         </div>
       )}
@@ -1498,7 +1549,10 @@ function AdminLoginView({ onSuccess, onCancel }) {
         padding: 20, 
         display: "flex", 
         flexDirection: "column", 
-        gap: 12 
+        gap: 12,
+        maxWidth: "480px",
+        margin: "0 auto",
+        width: "100%"
       }}>
         <div>
           <label className="hc-provenance-label">Admin Email</label>
@@ -1562,15 +1616,13 @@ function AdminDashboardView({ onNavigate, onOpenQr }) {
 
   return (
     <div className="hc-admin-dashboard" style={{ animation: "hcFadeIn 0.25s ease" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <span className="hc-tagline">Real-Time Ledger Intelligence</span>
-          <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Admin Dashboard</h1>
-        </div>
+      <div style={{ textAlign: "center", marginBottom: "var(--spacing-xs)" }}>
+        <span className="hc-tagline">Real-Time Ledger Intelligence</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>Admin Dashboard</h1>
         <button 
           type="button" 
           className="hc-button-secondary"
-          style={{ width: "auto", minHeight: "44px", fontSize: "0.95rem", borderRadius: "14px" }}
+          style={{ width: "auto", minHeight: "38px", fontSize: "0.9rem", borderRadius: "12px", margin: "8px auto 0 auto", display: "inline-flex" }}
           onClick={refreshData}
         >
           🔄 Refresh
@@ -1612,7 +1664,7 @@ function AdminDashboardView({ onNavigate, onOpenQr }) {
 
           {/* Verification Audit Logs */}
           <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>🔍 Real-Time Consumer Verification Audit Log</h3>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", textAlign: "center" }}>🔍 Real-Time Consumer Verification Audit Log</h3>
             {data.recentVerifications && data.recentVerifications.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {data.recentVerifications.map((v, i) => (
@@ -1637,13 +1689,13 @@ function AdminDashboardView({ onNavigate, onOpenQr }) {
                 ))}
               </div>
             ) : (
-              <p style={{ color: "var(--color-text-muted)" }}>No verifications logged yet.</p>
+              <p style={{ color: "var(--color-text-muted)", textAlign: "center" }}>No verifications logged yet.</p>
             )}
           </div>
 
           {/* Users & Roles Management */}
           <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>👥 Registered Actors & Roles</h3>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", textAlign: "center" }}>👥 Registered Actors & Roles</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {users.map((u, i) => (
                 <div key={u.userId || i} style={{ 
