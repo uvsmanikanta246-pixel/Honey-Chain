@@ -4,12 +4,12 @@
 // ==========================================================================
 
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDemoPlaceholderHoneyChainKey2026",
-  authDomain: "honey-chain-production.firebaseapp.com",
-  projectId: "honey-chain-production",
-  storageBucket: "honey-chain-production.appspot.com",
-  messagingSenderId: "109823456789",
-  appId: "1:109823456789:web:abcdef1234567890"
+  apiKey: "AIzaSyCrpi6DQg4fFM6SaccvHIbPGmOR9iKeZc8",
+  authDomain: "honey-chain-457f2.firebaseapp.com",
+  projectId: "honey-chain-457f2",
+  storageBucket: "honey-chain-457f2.firebasestorage.app",
+  messagingSenderId: "504169555301",
+  appId: "1:504169555301:web:670e2287dab6b6c3f46d8c"
 };
 
 class FirebaseManager {
