@@ -16,9 +16,15 @@ const translations = {
     nav_register: "Register Beekeeper",
     nav_record_harvest: "Record Harvest",
     nav_verify_honey: "Verify Honey",
-    nav_admin: "Admin Dashboard",
     nav_supply_chain: "Supply Chain",
     nav_logout: "Sign Out",
+
+    mob_nav_home: "Home",
+    mob_nav_register: "Register",
+    mob_nav_harvest: "Harvest",
+    mob_nav_batches: "Batches",
+    mob_nav_verify: "Verify",
+    mob_nav_supply: "Logistics",
 
     // Roles
     role_beekeeper: "Beekeeper",
@@ -153,9 +159,15 @@ const translations = {
     nav_register: "मधुमक्खी पालक पंजीकरण",
     nav_record_harvest: "शहद दर्ज करें",
     nav_verify_honey: "शहद सत्यापन",
-    nav_admin: "एडमिन डैशबोर्ड",
     nav_supply_chain: "सप्लाई चेन",
     nav_logout: "लॉग आउट",
+
+    mob_nav_home: "होम",
+    mob_nav_register: "पंजीकरण",
+    mob_nav_harvest: "शहद दर्ज",
+    mob_nav_batches: "मेरे बैच",
+    mob_nav_verify: "सत्यापन",
+    mob_nav_supply: "सप्लाई",
 
     // Roles
     role_beekeeper: "मधुमक्खी पालक",
@@ -350,6 +362,7 @@ function HoneyChainApp() {
   const [qrModalBatch, setQrModalBatch] = useState(null);
   const [firebaseModalOpen, setFirebaseModalOpen] = useState(false);
   const [firebaseConnected, setFirebaseConnected] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Check URL query parameters for direct QR verification links (?batchId=HC-8842)
   const [initialSearchCode, setInitialSearchCode] = useState("");
@@ -397,7 +410,7 @@ function HoneyChainApp() {
 
   return (
     <div className="hc-app-container">
-      {/* Enhanced Centered Floating Navbar */}
+      {/* Centered Floating Navbar for Desktop & Mobile Header */}
       <header className="hc-header">
         <div className="hc-header-inner">
           {/* Brand */}
@@ -411,7 +424,7 @@ function HoneyChainApp() {
             </span>
           </div>
 
-          {/* Individual Navigation Sections */}
+          {/* Desktop Navigation Sections */}
           <nav className="hc-nav-sections">
             <button 
               type="button"
@@ -464,7 +477,7 @@ function HoneyChainApp() {
             </button>
           </nav>
 
-          {/* Right Action Tools: Firebase Status & Language Toggle */}
+          {/* Right Action Tools: Firebase Status, Language Toggle & Mobile Menu */}
           <div className="hc-header-actions">
             {/* Firebase Connection Status Pill */}
             <button 
@@ -473,7 +486,7 @@ function HoneyChainApp() {
               onClick={() => setFirebaseModalOpen(true)}
               title="Click to view/configure Firebase connection"
             >
-              🔥 {firebaseConnected ? "Firebase Live" : "Firebase Ready"}
+              🔥 {firebaseConnected ? "Live" : "Ready"}
             </button>
 
             {/* Language Switcher */}
@@ -482,11 +495,108 @@ function HoneyChainApp() {
               className="hc-lang-toggle"
               onClick={() => setLang(lang === "en" ? "hi" : "en")}
             >
-              {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 English"}
+              {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 EN"}
+            </button>
+
+            {/* Mobile Hamburger Button */}
+            <button 
+              type="button" 
+              className="hc-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle Navigation Menu"
+              title="Menu Sections"
+            >
+              {mobileMenuOpen ? "✕" : "☰"}
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Drawer Menu for Phone View */}
+      {mobileMenuOpen && (
+        <div className="hc-mobile-drawer-backdrop" onClick={() => setMobileMenuOpen(false)}>
+          <div className="hc-mobile-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="hc-drawer-header">
+              <div className="hc-brand" onClick={() => { setCurrentView("landing"); setMobileMenuOpen(false); }}>
+                <img src="logo.svg" alt="Logo" style={{ width: 28, height: 28 }} />
+                <span className="hc-brand-text">{t("brand_title")}</span>
+              </div>
+              <button 
+                type="button" 
+                className="hc-button-text" 
+                style={{ width: "auto", padding: 4, fontSize: "1.2rem", textDecoration: "none" }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <nav className="hc-drawer-nav">
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "landing" ? "active" : ""}`}
+                onClick={() => { setCurrentView("landing"); setMobileMenuOpen(false); }}
+              >
+                <span>🏠</span> {t("nav_home")}
+              </button>
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "register" ? "active" : ""}`}
+                onClick={() => { setCurrentView("register"); setMobileMenuOpen(false); }}
+              >
+                <span>🐝</span> {t("nav_register")}
+              </button>
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "record" ? "active" : ""}`}
+                onClick={() => { setCurrentView("record"); setMobileMenuOpen(false); }}
+              >
+                <span>🍯</span> {t("nav_record_harvest")}
+              </button>
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "my-batches" ? "active" : ""}`}
+                onClick={() => { setCurrentView("my-batches"); setMobileMenuOpen(false); }}
+              >
+                <span>📋</span> {t("nav_my_batches")}
+              </button>
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "verify" ? "active" : ""}`}
+                onClick={() => { setCurrentView("verify"); setMobileMenuOpen(false); }}
+              >
+                <span>🔍</span> {t("nav_verify_honey")}
+              </button>
+              <button 
+                type="button" 
+                className={`hc-drawer-item ${currentView === "supply-chain" ? "active" : ""}`}
+                onClick={() => { setCurrentView("supply-chain"); setMobileMenuOpen(false); }}
+              >
+                <span>🚚</span> {t("nav_supply_chain")}
+              </button>
+            </nav>
+
+            <div style={{ borderTop: "1.5px solid var(--color-border-input)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <button 
+                type="button" 
+                className="hc-button-secondary"
+                style={{ minHeight: "38px", fontSize: "0.9rem" }}
+                onClick={() => { setFirebaseModalOpen(true); setMobileMenuOpen(false); }}
+              >
+                🔥 {firebaseConnected ? "Firebase Live Connected" : "Configure Firebase"}
+              </button>
+              <button 
+                type="button" 
+                className="hc-lang-toggle"
+                style={{ width: "100%", justifyContent: "center", minHeight: "38px" }}
+                onClick={() => setLang(lang === "en" ? "hi" : "en")}
+              >
+                {lang === "en" ? "🇮🇳 हिंदी में बदलें" : "🇬🇧 Switch to English"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="hc-main-content">
@@ -552,6 +662,63 @@ function HoneyChainApp() {
           />
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Bar for Phone View */}
+      <nav className="hc-mobile-bottom-nav">
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "landing" ? "active" : ""}`}
+          onClick={() => setCurrentView("landing")}
+        >
+          <span className="hc-mobile-nav-icon">🏠</span>
+          <span>{t("mob_nav_home")}</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "register" ? "active" : ""}`}
+          onClick={() => setCurrentView("register")}
+        >
+          <span className="hc-mobile-nav-icon">🐝</span>
+          <span>{t("mob_nav_register")}</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "record" ? "active" : ""}`}
+          onClick={() => setCurrentView("record")}
+        >
+          <span className="hc-mobile-nav-icon">🍯</span>
+          <span>{t("mob_nav_harvest")}</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "my-batches" ? "active" : ""}`}
+          onClick={() => setCurrentView("my-batches")}
+        >
+          <span className="hc-mobile-nav-icon">📋</span>
+          <span>{t("mob_nav_batches")}</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "verify" ? "active" : ""}`}
+          onClick={() => setCurrentView("verify")}
+        >
+          <span className="hc-mobile-nav-icon">🔍</span>
+          <span>{t("mob_nav_verify")}</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`hc-mobile-nav-item ${currentView === "supply-chain" ? "active" : ""}`}
+          onClick={() => setCurrentView("supply-chain")}
+        >
+          <span className="hc-mobile-nav-icon">🚚</span>
+          <span>{t("mob_nav_supply")}</span>
+        </button>
+      </nav>
 
       {/* QR Code Modal Popup */}
       {qrModalBatch && (
