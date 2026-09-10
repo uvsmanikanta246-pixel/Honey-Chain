@@ -376,17 +376,16 @@ function HoneyChainApp() {
 
   return (
     <div className="hc-app-container">
-      {/* Enhanced Header with Individual Sections */}
+      {/* Enhanced Centered Floating Navbar */}
       <header className="hc-header">
         <div className="hc-header-inner">
           {/* Brand */}
           <div 
             className="hc-brand" 
             onClick={() => setCurrentView("landing")} 
-            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
           >
-            <img src="logo.svg" alt="HoneyChain Logo" style={{ width: 34, height: 34 }} />
-            <span style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text)" }}>
+            <img src="logo.svg" alt="HoneyChain Logo" style={{ width: 32, height: 32 }} />
+            <span className="hc-brand-text">
               {t("brand_title")}
             </span>
           </div>
@@ -435,7 +434,7 @@ function HoneyChainApp() {
           </nav>
 
           {/* Right Action Tools: Firebase Status & Language Toggle */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="hc-header-actions">
             {/* Firebase Connection Status Pill */}
             <button 
               type="button"
@@ -451,14 +450,6 @@ function HoneyChainApp() {
               type="button" 
               className="hc-lang-toggle"
               onClick={() => setLang(lang === "en" ? "hi" : "en")}
-              style={{ 
-                background: "transparent", 
-                border: "2px solid var(--color-border-input)", 
-                borderRadius: "14px", 
-                padding: "6px 12px", 
-                fontWeight: 600, 
-                cursor: "pointer" 
-              }}
             >
               {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 English"}
             </button>
