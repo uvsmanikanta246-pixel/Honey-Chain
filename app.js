@@ -318,16 +318,32 @@ function HoneyChainApp() {
   // Navigation views: 'landing' | 'register' | 'record' | 'my-batches' | 'verify' | 'admin' | 'supply-chain' | 'admin-login'
   const [currentView, setCurrentView] = useState("landing");
   
-  // Auth state
+  // Auth & Beekeeper state
   const [currentUser, setCurrentUser] = useState(null);
   const [currentProfile, setCurrentProfile] = useState(null);
   const [userRole, setUserRole] = useState("customer"); // 'beekeeper' | 'distributor' | 'retailer' | 'customer' | 'admin'
-  const [activeBeekeeper, setActiveBeekeeper] = useState({
-    beekeeperId: "BK-1042",
-    name: "Anand Kumar",
-    phone: "+919876543210",
-    farmLocation: "Sundarban Delta, Sector 4",
-    aadhaarMasked: "XXXX-XXXX-7654"
+  
+  // Beekeeper registration state
+  const [isBeekeeperRegistered, setIsBeekeeperRegistered] = useState(() => {
+    try {
+      return !!localStorage.getItem("honeychain_registered_beekeeper");
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const [activeBeekeeper, setActiveBeekeeper] = useState(() => {
+    try {
+      const saved = localStorage.getItem("honeychain_registered_beekeeper");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      beekeeperId: "BK-1042",
+      name: "Anand Kumar",
+      phone: "+919876543210",
+      farmLocation: "Sundarban Delta, Sector 4",
+      aadhaarMasked: "XXXX-XXXX-7654"
+    };
   });
 
   // Modal states
@@ -354,13 +370,18 @@ function HoneyChainApp() {
         if (profile?.role) {
           setUserRole(profile.role);
           if (profile.role === "beekeeper") {
-            setActiveBeekeeper({
+            const bk = {
               beekeeperId: profile.beekeeperId || `BK-${(profile.userId || "1042").slice(-4)}`,
               name: profile.name || "Verified Beekeeper",
               phone: profile.phone || "",
               farmLocation: profile.farmLocation || "Apiary Location",
               aadhaarMasked: profile.aadhaarMasked || "Verified"
-            });
+            };
+            setActiveBeekeeper(bk);
+            setIsBeekeeperRegistered(true);
+            try {
+              localStorage.setItem("honeychain_registered_beekeeper", JSON.stringify(bk));
+            } catch (e) {}
           }
         }
       });
@@ -402,18 +423,36 @@ function HoneyChainApp() {
 
             <button 
               type="button"
-              className={`hc-nav-tab ${currentView === "verify" ? "active" : ""}`}
-              onClick={() => setCurrentView("verify")}
+              className={`hc-nav-tab ${currentView === "register" ? "active" : ""}`}
+              onClick={() => setCurrentView("register")}
             >
-              🔍 {t("nav_verify_honey")}
+              🐝 {t("nav_register")}
             </button>
 
             <button 
               type="button"
-              className={`hc-nav-tab ${currentView === "my-batches" || currentView === "record" || currentView === "register" ? "active" : ""}`}
-              onClick={() => setCurrentView("my-batches")}
+              className={`hc-nav-tab ${currentView === "record" ? "active" : ""}`}
+              onClick={() => setCurrentView("record")}
+              title={isBeekeeperRegistered ? "Record Honey Harvest" : "Register Beekeeper to unlock"}
             >
-              🐝 {t("nav_my_batches")}
+              🍯 {t("nav_record_harvest")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "my-batches" ? "active" : ""}`}
+              onClick={() => setCurrentView("my-batches")}
+              title={isBeekeeperRegistered ? "View Beekeeper Batches" : "Register Beekeeper to unlock"}
+            >
+              📋 {t("nav_my_batches")}
+            </button>
+
+            <button 
+              type="button"
+              className={`hc-nav-tab ${currentView === "verify" ? "active" : ""}`}
+              onClick={() => setCurrentView("verify")}
+            >
+              🔍 {t("nav_verify_honey")}
             </button>
 
             <button 
@@ -464,6 +503,7 @@ function HoneyChainApp() {
             onNavigate={setCurrentView} 
             userRole={userRole} 
             setUserRole={setUserRole} 
+            isBeekeeperRegistered={isBeekeeperRegistered}
           />
         )}
 
@@ -472,15 +512,21 @@ function HoneyChainApp() {
             onCancel={() => setCurrentView("landing")}
             onComplete={(newProfile) => {
               setActiveBeekeeper(newProfile);
+              setIsBeekeeperRegistered(true);
               setUserRole("beekeeper");
-              setCurrentView("my-batches");
+              try {
+                localStorage.setItem("honeychain_registered_beekeeper", JSON.stringify(newProfile));
+              } catch (e) {}
             }}
+            onNavigate={setCurrentView}
           />
         )}
 
         {currentView === "record" && (
           <RecordHarvestWizard 
             activeBeekeeper={activeBeekeeper}
+            isBeekeeperRegistered={isBeekeeperRegistered}
+            onRegisterPrompt={() => setCurrentView("register")}
             onCancel={() => setCurrentView("my-batches")}
             onComplete={(sealedBatch) => {
               setQrModalBatch(sealedBatch);
@@ -492,6 +538,8 @@ function HoneyChainApp() {
         {currentView === "my-batches" && (
           <MyBatchesView 
             activeBeekeeper={activeBeekeeper}
+            isBeekeeperRegistered={isBeekeeperRegistered}
+            onRegisterPrompt={() => setCurrentView("register")}
             onRecordNew={() => setCurrentView("record")}
             onOpenQr={(batch) => setQrModalBatch(batch)}
             onNavigate={setCurrentView}
@@ -554,7 +602,7 @@ function HoneyChainApp() {
 // ==========================================================================
 // 1. Landing View Component
 // ==========================================================================
-function LandingView({ onNavigate, userRole, setUserRole }) {
+function LandingView({ onNavigate, userRole, setUserRole, isBeekeeperRegistered }) {
   const { t } = useTranslation();
 
   return (
@@ -590,16 +638,34 @@ function LandingView({ onNavigate, userRole, setUserRole }) {
           className="hc-button-primary"
           onClick={() => onNavigate("verify")}
         >
-          {t("landing_consumer_btn")}
+          🔍 {t("nav_verify_honey")} (No Login)
         </button>
 
-        {/* Beekeeper Portal */}
+        {/* Beekeeper Registration */}
         <button 
           type="button" 
           className="hc-button-secondary"
           onClick={() => onNavigate("register")}
         >
-          {t("landing_beekeeper_btn")}
+          🐝 {t("nav_register")}
+        </button>
+
+        {/* Record Honey Harvest */}
+        <button 
+          type="button" 
+          className="hc-button-secondary"
+          onClick={() => onNavigate("record")}
+        >
+          🍯 {t("nav_record_harvest")}
+        </button>
+
+        {/* My Batches */}
+        <button 
+          type="button" 
+          className="hc-button-secondary"
+          onClick={() => onNavigate("my-batches")}
+        >
+          📋 {t("nav_my_batches")}
         </button>
 
         {/* Supply Chain Custody */}
@@ -608,7 +674,7 @@ function LandingView({ onNavigate, userRole, setUserRole }) {
           className="hc-button-secondary"
           onClick={() => onNavigate("supply-chain")}
         >
-          {t("landing_distributor_btn")}
+          🚚 {t("landing_distributor_btn")}
         </button>
 
         {/* Admin Dashboard */}
@@ -617,7 +683,7 @@ function LandingView({ onNavigate, userRole, setUserRole }) {
           className="hc-button-text"
           onClick={() => onNavigate("admin-login")}
         >
-          {t("landing_admin_btn")}
+          📊 {t("landing_admin_btn")}
         </button>
       </div>
     </div>
@@ -826,9 +892,9 @@ function BeekeeperRegistrationWizard({ onCancel, onComplete }) {
         <div style={{ textAlign: "center", animation: "hcPopIn 0.3s ease" }}>
           <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>✅</div>
           <span className="hc-tagline">{t("reg_conf_badge")}</span>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 16px 0" }}>{t("reg_conf_title")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 16px 0", textAlign: "center" }}>{t("reg_conf_title")}</h2>
 
-          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 18, padding: 18, textAlign: "left", marginBottom: 20 }}>
+          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 18, padding: 18, textAlign: "left", marginBottom: 20, maxWidth: "480px", margin: "0 auto 20px auto" }}>
             <div style={{ marginBottom: 8 }}>
               <span className="hc-provenance-label">{t("reg_conf_id_lbl")}: </span>
               <strong style={{ color: "var(--color-accent)" }}>{createdProfile.beekeeperId || "BK-1042"}</strong>
@@ -847,13 +913,38 @@ function BeekeeperRegistrationWizard({ onCancel, onComplete }) {
             </div>
           </div>
 
-          <button 
-            type="button" 
-            className="hc-button-primary"
-            onClick={() => onComplete(createdProfile)}
-          >
-            {t("reg_conf_btn_record")}
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "420px", margin: "0 auto", width: "100%" }}>
+            <button 
+              type="button" 
+              className="hc-button-primary"
+              onClick={() => {
+                onComplete(createdProfile);
+                if (onNavigate) onNavigate("record");
+              }}
+            >
+              🍯 {t("reg_conf_btn_record")}
+            </button>
+            <button 
+              type="button" 
+              className="hc-button-secondary"
+              onClick={() => {
+                onComplete(createdProfile);
+                if (onNavigate) onNavigate("my-batches");
+              }}
+            >
+              📋 {t("reg_conf_btn_my_batches")}
+            </button>
+            <button 
+              type="button" 
+              className="hc-button-text"
+              onClick={() => {
+                onComplete(createdProfile);
+                if (onNavigate) onNavigate("landing");
+              }}
+            >
+              🏠 {t("reg_conf_btn_home")}
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -863,7 +954,7 @@ function BeekeeperRegistrationWizard({ onCancel, onComplete }) {
 // ==========================================================================
 // 3. Record Harvest Wizard (SHA-256 Cryptographic Hash + QR Code Generator)
 // ==========================================================================
-function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
+function RecordHarvestWizard({ activeBeekeeper, isBeekeeperRegistered, onRegisterPrompt, onCancel, onComplete }) {
   const { t } = useTranslation();
   const [step, setStep] = useState(1); // 1: Date, 2: Quantity, 3: Quality, 4: Location, 5: Sealed
   
@@ -875,6 +966,35 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
   const [isSealing, setIsSealing] = useState(false);
   const [sealedBatch, setSealedBatch] = useState(null);
 
+  // If user is not yet registered, show friendly access gate
+  if (!isBeekeeperRegistered) {
+    return (
+      <div style={{ textAlign: "center", animation: "hcFadeIn 0.3s ease", padding: "20px 0" }}>
+        <span className="hc-tagline">Beekeeper Verification Required</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "8px 0", textAlign: "center" }}>🍯 Record Honey Harvest</h1>
+        <p style={{ color: "var(--color-text-muted)", maxWidth: "500px", margin: "0 auto 24px auto", textAlign: "center" }}>
+          To record honey batches and cryptographically seal your harvest with SHA-256 in Firestore, please complete your Beekeeper Registration first.
+        </p>
+        <div style={{ maxWidth: "420px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
+          <button 
+            type="button" 
+            className="hc-button-primary"
+            onClick={onRegisterPrompt}
+          >
+            🐝 Register as Beekeeper Now
+          </button>
+          <button 
+            type="button" 
+            className="hc-button-secondary"
+            onClick={onCancel}
+          >
+            ← Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleSealBatch = async () => {
     setIsSealing(true);
     try {
@@ -884,7 +1004,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
         harvestDate,
         quantity: Number(quantity),
         qualityGrade,
-        location
+        location: location || activeBeekeeper?.farmLocation || "Apiary Location"
       });
       setSealedBatch(batchRecord);
       setStep(5);
@@ -909,7 +1029,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
       {/* Step 1: Harvest Date */}
       {step === 1 && (
         <div>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_date")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0", textAlign: "center" }}>{t("batch_q_date")}</h2>
           <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_date")}</label>
           <input 
             type="date" 
@@ -928,7 +1048,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
       {/* Step 2: Quantity in kg */}
       {step === 2 && (
         <div>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_qty")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0", textAlign: "center" }}>{t("batch_q_qty")}</h2>
           <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_qty")}</label>
           <input 
             type="number" 
@@ -951,7 +1071,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
       {/* Step 3: Quality Test */}
       {step === 3 && (
         <div>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_quality")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0", textAlign: "center" }}>{t("batch_q_quality")}</h2>
           <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_quality")}</label>
           <select 
             className="hc-select" 
@@ -974,7 +1094,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
       {/* Step 4: Confirm Location & Submit */}
       {step === 4 && (
         <div>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_loc")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0", textAlign: "center" }}>{t("batch_q_loc")}</h2>
           <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_loc")}</label>
           <input 
             type="text" 
@@ -996,7 +1116,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
       {step === 5 && sealedBatch && (
         <div style={{ textAlign: "center", animation: "hcPopIn 0.35s ease" }}>
           <span className="hc-tagline">{t("batch_sealed_badge")}</span>
-          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 12px 0" }}>{t("batch_sealed_title")}</h2>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 12px 0", textAlign: "center" }}>{t("batch_sealed_title")}</h2>
           <div className="hc-display-number hc-highlight">{sealedBatch.batchId}</div>
 
           {/* Generated QR Code Preview */}
@@ -1011,7 +1131,7 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
             </p>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "var(--spacing-md)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "var(--spacing-md)", maxWidth: "440px", margin: "var(--spacing-md) auto 0 auto", width: "100%" }}>
             <a 
               href={sealedBatch.qrCodeUrl} 
               download={`HoneyChain-QR-${sealedBatch.batchId}.png`}
@@ -1025,7 +1145,17 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
               className="hc-button-secondary"
               onClick={() => onComplete(sealedBatch)}
             >
-              {t("batch_btn_view_my_batches")}
+              📋 {t("batch_btn_view_my_batches")}
+            </button>
+            <button 
+              type="button" 
+              className="hc-button-text"
+              onClick={() => {
+                setSealedBatch(null);
+                setStep(1);
+              }}
+            >
+              + Record Another Batch
             </button>
           </div>
         </div>
@@ -1037,13 +1167,17 @@ function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
 // ==========================================================================
 // 4. My Batches View
 // ==========================================================================
-function MyBatchesView({ activeBeekeeper, onRecordNew, onOpenQr, onNavigate }) {
+function MyBatchesView({ activeBeekeeper, isBeekeeperRegistered, onRegisterPrompt, onRecordNew, onOpenQr, onNavigate }) {
   const { t } = useTranslation();
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadBatches() {
+      if (!isBeekeeperRegistered) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         if (window.batchService) {
@@ -1057,7 +1191,29 @@ function MyBatchesView({ activeBeekeeper, onRecordNew, onOpenQr, onNavigate }) {
       }
     }
     loadBatches();
-  }, [activeBeekeeper]);
+  }, [activeBeekeeper, isBeekeeperRegistered]);
+
+  // If user is not yet registered, show prompt to register
+  if (!isBeekeeperRegistered) {
+    return (
+      <div style={{ textAlign: "center", animation: "hcFadeIn 0.3s ease", padding: "20px 0" }}>
+        <span className="hc-tagline">Beekeeper Ledger</span>
+        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "8px 0", textAlign: "center" }}>📋 My Honey Batches</h1>
+        <p style={{ color: "var(--color-text-muted)", maxWidth: "500px", margin: "0 auto 24px auto", textAlign: "center" }}>
+          You have not registered an apiary profile yet. Register your beekeeper profile with phone verification to start recording and tracking your sealed harvest batches.
+        </p>
+        <div style={{ maxWidth: "420px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
+          <button 
+            type="button" 
+            className="hc-button-primary"
+            onClick={onRegisterPrompt}
+          >
+            🐝 Register Beekeeper Identity
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
