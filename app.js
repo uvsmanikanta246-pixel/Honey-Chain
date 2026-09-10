@@ -462,14 +462,6 @@ function HoneyChainApp() {
             >
               🚚 {t("nav_supply_chain")}
             </button>
-
-            <button 
-              type="button"
-              className={`hc-nav-tab ${currentView === "admin" || currentView === "admin-login" ? "active" : ""}`}
-              onClick={() => setCurrentView(userRole === "admin" ? "admin" : "admin-login")}
-            >
-              📊 {t("nav_admin")}
-            </button>
           </nav>
 
           {/* Right Action Tools: Firebase Status & Language Toggle */}
@@ -557,23 +549,6 @@ function HoneyChainApp() {
           <SupplyChainManagerView 
             onNavigate={setCurrentView}
             currentUser={currentUser}
-          />
-        )}
-
-        {currentView === "admin-login" && (
-          <AdminLoginView 
-            onSuccess={() => {
-              setUserRole("admin");
-              setCurrentView("admin");
-            }}
-            onCancel={() => setCurrentView("landing")}
-          />
-        )}
-
-        {currentView === "admin" && (
-          <AdminDashboardView 
-            onNavigate={setCurrentView}
-            onOpenQr={(batch) => setQrModalBatch(batch)}
           />
         )}
       </main>
@@ -675,15 +650,6 @@ function LandingView({ onNavigate, userRole, setUserRole, isBeekeeperRegistered 
           onClick={() => onNavigate("supply-chain")}
         >
           🚚 {t("landing_distributor_btn")}
-        </button>
-
-        {/* Admin Dashboard */}
-        <button 
-          type="button" 
-          className="hc-button-text"
-          onClick={() => onNavigate("admin-login")}
-        >
-          📊 {t("landing_admin_btn")}
         </button>
       </div>
     </div>
@@ -1651,224 +1617,7 @@ function SupplyChainManagerView({ onNavigate, currentUser }) {
 }
 
 // ==========================================================================
-// 7. Admin Login View
-// ==========================================================================
-function AdminLoginView({ onSuccess, onCancel }) {
-  const [email, setEmail] = useState("admin@honeychain.org");
-  const [password, setPassword] = useState("admin123");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      await window.authService.adminLogin(email, password);
-      onSuccess();
-    } catch (err) {
-      setError(err.message || "Invalid administrator credentials.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
-      <div style={{ textAlign: "center" }}>
-        <span className="hc-tagline">Security & Management</span>
-        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>Admin Portal Login</h1>
-        <p style={{ color: "var(--color-text-muted)", textAlign: "center", maxWidth: "520px", margin: "0 auto" }}>
-          Sign in to view real-time system metrics, manage beekeeper identities, and inspect public verification audits.
-        </p>
-      </div>
-
-      {error && (
-        <div style={{ background: "#FDEDEC", color: "#922B21", padding: "12px 16px", borderRadius: 12, textAlign: "center" }}>
-          ⚠️ {error}
-        </div>
-      )}
-
-      <form onSubmit={handleLogin} style={{ 
-        background: "var(--color-input-bg)", 
-        border: "2.5px solid var(--color-border-input)", 
-        borderRadius: 20, 
-        padding: 20, 
-        display: "flex", 
-        flexDirection: "column", 
-        gap: 12,
-        maxWidth: "480px",
-        margin: "0 auto",
-        width: "100%"
-      }}>
-        <div>
-          <label className="hc-provenance-label">Admin Email</label>
-          <input 
-            type="text" 
-            className="hc-input" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
-        </div>
-        <div>
-          <label className="hc-provenance-label">Password</label>
-          <input 
-            type="password" 
-            className="hc-input" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-          <button type="button" className="hc-button-secondary" onClick={onCancel}>Cancel</button>
-          <button type="submit" className="hc-button-primary" disabled={loading}>
-            {loading ? "Authenticating..." : "Sign In as Admin"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-// ==========================================================================
-// 8. Admin Dashboard View (Metrics, Verification Logs, User Management)
-// ==========================================================================
-function AdminDashboardView({ onNavigate, onOpenQr }) {
-  const [data, setData] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refreshData = async () => {
-    setLoading(true);
-    try {
-      if (window.adminService) {
-        const dashboard = await window.adminService.getDashboardMetrics();
-        const userList = await window.adminService.getAllUsers();
-        setData(dashboard);
-        setUsers(userList);
-      }
-    } catch (e) {
-      console.warn("Failed to load admin data:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshData();
-  }, []);
-
-  return (
-    <div className="hc-admin-dashboard" style={{ animation: "hcFadeIn 0.25s ease" }}>
-      <div style={{ textAlign: "center", marginBottom: "var(--spacing-xs)" }}>
-        <span className="hc-tagline">Real-Time Ledger Intelligence</span>
-        <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0", textAlign: "center" }}>Admin Dashboard</h1>
-        <button 
-          type="button" 
-          className="hc-button-secondary"
-          style={{ width: "auto", minHeight: "38px", fontSize: "0.9rem", borderRadius: "12px", margin: "8px auto 0 auto", display: "inline-flex" }}
-          onClick={refreshData}
-        >
-          🔄 Refresh
-        </button>
-      </div>
-
-      {loading || !data ? (
-        <div style={{ textAlign: "center", padding: "40px 0" }}>⏳ Loading analytics from Firestore...</div>
-      ) : (
-        <>
-          {/* Key Metrics Grid */}
-          <div className="hc-admin-grid">
-            <div className="hc-stat-card">
-              <span className="hc-stat-label">Total Beekeepers</span>
-              <div className="hc-stat-number">{data.metrics.totalBeekeepers}</div>
-              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Verified via Aadhaar/OTP</span>
-            </div>
-
-            <div className="hc-stat-card">
-              <span className="hc-stat-label">Honey Batches</span>
-              <div className="hc-stat-number">{data.metrics.totalBatches}</div>
-              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Sealed with SHA-256</span>
-            </div>
-
-            <div className="hc-stat-card">
-              <span className="hc-stat-label">Harvest Volume</span>
-              <div className="hc-stat-number">{data.metrics.totalVolumeKg} <span style={{ fontSize: "1.2rem" }}>kg</span></div>
-              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Pure Honey Tracked</span>
-            </div>
-
-            <div className="hc-stat-card">
-              <span className="hc-stat-label">Consumer Verifications</span>
-              <div className="hc-stat-number">{data.metrics.totalVerifications}</div>
-              <span style={{ fontSize: "0.85rem", color: "#1E8449", fontWeight: 600 }}>
-                {data.metrics.successRate}% Authentic Rate
-              </span>
-            </div>
-          </div>
-
-          {/* Verification Audit Logs */}
-          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", textAlign: "center" }}>🔍 Real-Time Consumer Verification Audit Log</h3>
-            {data.recentVerifications && data.recentVerifications.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {data.recentVerifications.map((v, i) => (
-                  <div key={v.verificationId || i} style={{ 
-                    display: "flex", 
-                    justifyContent: "space-between", 
-                    alignItems: "center",
-                    padding: "10px 14px",
-                    borderRadius: 12,
-                    background: v.result === "authentic" ? "var(--color-accent-light)" : "#FDEDEC"
-                  }}>
-                    <div>
-                      <strong style={{ color: "var(--color-text)" }}>Batch {v.batchId}</strong>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginLeft: 10 }}>
-                        {new Date(v.verifiedAt || v.verifiedAtIso).toLocaleString()}
-                      </span>
-                    </div>
-                    <span className={`hc-role-badge ${v.result === "authentic" ? "retailer" : ""}`} style={{ fontSize: "0.85rem" }}>
-                      {v.result === "authentic" ? "✅ Authentic" : "⚠️ Not Found"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: "var(--color-text-muted)", textAlign: "center" }}>No verifications logged yet.</p>
-            )}
-          </div>
-
-          {/* Users & Roles Management */}
-          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", textAlign: "center" }}>👥 Registered Actors & Roles</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {users.map((u, i) => (
-                <div key={u.userId || i} style={{ 
-                  display: "flex", 
-                  justifyContent: "space-between", 
-                  alignItems: "center",
-                  padding: "10px 14px",
-                  borderBottom: "1px solid var(--color-border-input)"
-                }}>
-                  <div>
-                    <strong>{u.name}</strong>
-                    <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>{u.phone || u.email}</div>
-                  </div>
-                  <span className={`hc-role-badge ${u.role}`}>{u.role}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ==========================================================================
-// 9. Batch QR Code Modal Component
+// 7. Batch QR Code Modal Component
 // ==========================================================================
 function BatchQrModal({ batch, onClose }) {
   const { t } = useTranslation();
