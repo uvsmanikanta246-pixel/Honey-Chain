@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HoneyChain - Beekeeping Origin & Provenance</title>
+  <title>HoneyChain - Beekeeping Origin & Provenance Ledger</title>
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   
   <!-- Typography: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Design System Styles -->
   <link rel="stylesheet" href="theme.css">
@@ -20,6 +20,21 @@
   <!-- Lightweight QR Code Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <!-- Firebase 9/10 Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+
+  <!-- HoneyChain Firebase Backend Service Layer -->
+  <script src="services/firebaseConfig.js"></script>
+  <script src="services/authService.js"></script>
+  <script src="services/supplyChainService.js"></script>
+  <script src="services/batchService.js"></script>
+  <script src="services/verificationService.js"></script>
+  <script src="services/adminService.js"></script>
+
   <!-- React 18 & ReactDOM via CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -28,6 +43,9 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
+
+  <!-- Hidden Recaptcha container for Firebase Phone OTP Verification -->
+  <div id="recaptcha-container"></div>
 
   <!-- React Application Mount Point -->
   <div id="root"></div>

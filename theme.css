@@ -821,3 +821,153 @@ p, .hc-body {
     top: 10%;
   }
 }
+
+/* --- 14. Admin Dashboard, Supply Chain & Role Components --- */
+.hc-admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.hc-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hc-stat-card {
+  background-color: var(--color-input-bg);
+  border: 2.5px solid var(--color-border-input);
+  border-radius: var(--border-radius-input);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hc-stat-number {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.hc-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hc-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+  border: 1.5px solid var(--color-accent);
+}
+
+.hc-role-badge.admin {
+  background-color: #3A2E26;
+  color: #FFFFFF;
+  border-color: #3A2E26;
+}
+
+.hc-role-badge.distributor {
+  background-color: #EBF5FB;
+  color: #2471A3;
+  border-color: #AED6F1;
+}
+
+.hc-role-badge.retailer {
+  background-color: #EAFAF1;
+  color: #1E8449;
+  border-color: #A9DFBF;
+}
+
+/* Supply Chain Timeline */
+.hc-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  position: relative;
+  margin: var(--spacing-md) 0;
+  padding-left: var(--spacing-md);
+  border-left: 3px solid var(--color-border-input);
+}
+
+.hc-timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--spacing-sm);
+}
+
+.hc-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--spacing-md) - 8px);
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  border: 3px solid var(--color-bg);
+}
+
+.hc-timeline-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.hc-timeline-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.hc-timeline-notes {
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-accent-light);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+/* Firebase status pill */
+.hc-firebase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-medium);
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.hc-firebase-pill.connected {
+  color: #1E8449;
+  background: #EAFAF1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .hc-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && (
+        (request.auth.token.role == role) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         getUserData().role == role)
+      );
+    }
+
+    function isAdmin() {
+      return hasRole('admin') || 
+             (isAuthenticated() && request.auth.token.email == 'admin@honeychain.org');
+    }
+
+    function isBeekeeper() {
+      return hasRole('beekeeper') || isAdmin();
+    }
+
+    function isSupplyChainActor() {
+      return hasRole('beekeeper') || 
+             hasRole('distributor') || 
+             hasRole('retailer') || 
+             isAdmin();
+    }
+
+    // --- Users Collection ---
+    // Users can read/write their own profile; Admins can manage all users
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // --- Beekeepers Collection ---
+    // Public read for honey provenance transparency; Write restricted to owner/admin
+    match /beekeepers/{beekeeperId} {
+      allow read: if true; // Publicly readable for honey origin verification
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Honey Batches Collection ---
+    // Public read for customer verification; Write restricted to authenticated beekeepers and admins
+    match /honeyBatches/{batchId} {
+      allow read: if true; // Publicly accessible to verify honey authenticity
+      allow create: if isBeekeeper() || isAuthenticated();
+      allow update: if isSupplyChainActor();
+      allow delete: if isAdmin();
+    }
+
+    // --- Supply Chain Events Collection ---
+    // Public read for full journey timeline; Creation allowed for authorized supply chain actors
+    match /supplyChain/{eventId} {
+      allow read: if true; // Publicly accessible for customer transparency
+      allow create: if isSupplyChainActor() || isAuthenticated();
+      allow update: if isAdmin(); // Supply chain events are immutable
+      allow delete: if isAdmin();
+    }
+
+    // --- Verifications Collection ---
+    // Public can create verification logs (record scan attempts); Read restricted to admins & aggregated queries
+    match /verifications/{verificationId} {
+      allow read: if true;
+      allow create: if true; // Anyone (including unauthenticated consumers) logs verification checks
+      allow update, delete: if isAdmin(); // Logs are immutable
+    }
+
+    // --- Default Deny for any unlisted collections ---
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

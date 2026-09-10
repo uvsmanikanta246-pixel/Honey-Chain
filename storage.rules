@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Public QR codes generated for batches
+    match /qrcodes/{batchId}.png {
+      allow read: if true; // Publicly accessible to print/scan
+      allow write: if isAuthenticated();
+    }
+
+    // Lab test reports and certificates
+    match /certificates/{certificateId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Beekeeper profile images
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default fallback
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}

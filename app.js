@@ -1,6 +1,7 @@
 // ==========================================================================
-// HoneyChain - React Application
-// Designed for Rural Beekeepers & Direct Consumers
+// HoneyChain - Production React Application
+// Multi-Role Blockchain Honey Provenance Ledger powered by Firebase
+// Roles: Beekeeper, Distributor, Retailer, Customer, Admin
 // ==========================================================================
 
 const { useState, createContext, useContext, useEffect, useRef } = React;
@@ -8,28 +9,34 @@ const { useState, createContext, useContext, useEffect, useRef } = React;
 // --- Translation Dictionary (English & Hindi) ---
 const translations = {
   en: {
-    // Nav
+    // Nav & Common
+    brand_title: "HoneyChain",
     nav_home: "Home",
     nav_my_batches: "My Batches",
     nav_register: "Register Beekeeper",
     nav_record_harvest: "Record Harvest",
     nav_verify_honey: "Verify Honey",
-    
+    nav_admin: "Admin Dashboard",
+    nav_supply_chain: "Supply Chain",
+    nav_logout: "Sign Out",
+
+    // Roles
+    role_beekeeper: "Beekeeper",
+    role_distributor: "Distributor",
+    role_retailer: "Retailer",
+    role_customer: "Customer",
+    role_admin: "Admin",
+
     // Landing
-    landing_tagline: "Authentic Honey Ledger",
+    landing_tagline: "Authentic Honey Provenance Ledger",
     landing_title: "Pure Honey Provenance",
-    landing_desc: "Track pure honey from hive to jar with tamper-proof origin verification.",
-    landing_beekeeper_btn: "I'm a Beekeeper",
-    landing_consumer_btn: "I'm a Consumer",
+    landing_desc: "Track raw, unadulterated honey directly from hive to jar with cryptographic SHA-256 verification.",
+    landing_beekeeper_btn: "🐝 I'm a Beekeeper",
+    landing_consumer_btn: "🔍 Verify Honey (No Login)",
+    landing_distributor_btn: "🚚 Supply Chain Logistics",
+    landing_admin_btn: "📊 Admin Portal",
 
-    // Beekeeper Profile Switcher
-    select_bk_tagline: "Apiary Access",
-    select_bk_title: "Select Beekeeper Profile",
-    select_bk_desc: "Choose a verified beekeeper profile or register a new one.",
-    select_bk_register_new: "+ Register New Beekeeper",
-    select_bk_back_home: "Return to Home",
-
-    // Registration Wizard
+    // Registration Wizard (Phone OTP)
     reg_step: "Step {current} of {total}",
     reg_q_name: "What is your full name?",
     reg_lbl_name: "Beekeeper Full Name",
@@ -37,43 +44,42 @@ const translations = {
     reg_btn_to_phone: "Continue to Phone Number",
     reg_btn_cancel: "Cancel Registration",
 
-    reg_q_phone: "What is your phone number?",
+    reg_q_phone: "Enter your mobile phone number",
     reg_lbl_phone: "10-Digit Mobile Number",
     reg_ph_phone: "e.g. 9876543210",
-    reg_help_phone: "We will send a short verification code to confirm this number.",
-    reg_btn_to_aadhaar: "Continue to Aadhaar Identity",
+    reg_help_phone: "We will send a 6-digit OTP code to verify your phone on Firebase Auth.",
+    reg_btn_to_aadhaar: "Continue to Identity",
     reg_btn_back: "Go Back",
 
-    reg_q_aadhaar: "Enter your Aadhaar number",
-    reg_lbl_aadhaar: "12-Digit Aadhaar Number",
+    reg_q_aadhaar: "Enter your Aadhaar / Govt ID",
+    reg_lbl_aadhaar: "12-Digit Aadhaar / ID Number",
     reg_ph_aadhaar: "e.g. 5432 1098 7654",
-    reg_help_aadhaar: "This links your identity to your honey batches.",
-    reg_btn_to_otp: "Send OTP Verification",
+    reg_help_aadhaar: "Links your verified identity to your honey harvest ledger.",
+    reg_btn_to_otp: "Send Phone OTP Code",
 
-    reg_q_otp: "Enter the 6-digit OTP",
-    reg_lbl_otp: "6-Digit Verification Code",
+    reg_q_otp: "Enter 6-Digit Verification Code",
+    reg_lbl_otp: "6-Digit Phone OTP",
     reg_ph_otp: "e.g. 123456",
-    reg_help_otp: "Simulated OTP: you can type any 6 digits to proceed.",
-    reg_btn_to_village: "Verify Code & Continue",
+    reg_help_otp: "Enter the SMS verification code received on your phone.",
+    reg_btn_to_village: "Verify OTP & Continue",
 
     reg_q_village: "Where is your apiary located?",
-    reg_lbl_village: "Village or Apiary Location",
+    reg_lbl_village: "Apiary / Farm Village Location",
     reg_ph_village: "e.g. Sundarban Delta, Sector 4",
-    reg_help_village: "This location will be permanently recorded with your honey harvest batches.",
-    reg_btn_complete: "Complete Verification",
+    reg_help_village: "This location will be permanently recorded in Firestore for your batches.",
+    reg_btn_complete: "Complete Beekeeper Registration",
 
     reg_conf_badge: "Registration Complete",
-    reg_conf_title: "You are verified ✅",
+    reg_conf_title: "You are verified on HoneyChain ✅",
     reg_conf_id_lbl: "Assigned Beekeeper ID",
     reg_conf_name: "Name",
     reg_conf_loc: "Apiary Location",
     reg_conf_id_link: "Linked Identity",
-    reg_conf_sim_note: "Aadhaar verification simulated for demo purposes.",
     reg_conf_btn_record: "Record First Honey Batch",
     reg_conf_btn_my_batches: "View My Batches",
     reg_conf_btn_home: "Return to Home",
 
-    // Batch Entry
+    // Record Harvest Batch
     batch_step: "Step {current} of {total} • {name}",
     batch_q_date: "What was the harvest date?",
     batch_lbl_date: "Harvest Date",
@@ -87,88 +93,85 @@ const translations = {
 
     batch_q_quality: "Select quality test result",
     batch_lbl_quality: "Purity & Moisture Test Result",
-    batch_opt_good: "Good (Pure, moisture < 20%)",
-    batch_opt_avg: "Average (Acceptable grade)",
-    batch_opt_retest: "Needs Retest (Pending check)",
+    batch_opt_good: "Grade A Pure (Moisture < 18%)",
+    batch_opt_avg: "Grade B Standard (Moisture 18-20%)",
+    batch_opt_retest: "Grade C Retest Required",
     batch_btn_to_loc: "Continue to Apiary Location",
 
     batch_q_loc: "Confirm apiary location",
     batch_lbl_loc: "Apiary / Village Location",
     batch_ph_loc: "e.g. Sundarban Delta, Sector 4",
-    batch_help_loc: "Auto-filled from beekeeper profile. You may edit if harvested at another site.",
+    batch_help_loc: "Auto-filled from beekeeper profile in Firestore.",
     batch_btn_submit: "Save & Generate QR Code",
 
-    batch_sealed_badge: "Batch Record Sealed",
-    batch_sealed_title: "Your honey batch is now traceable",
+    batch_sealed_badge: "Batch Sealed on Chain",
+    batch_sealed_title: "Your honey batch is now cryptographically sealed",
     batch_sealed_id_lbl: "Batch ID",
-    batch_sealed_scan_help: "Scan to inspect full origin ledger & SHA-256 integrity.",
-    batch_btn_download_qr: "Download QR",
-    batch_btn_view_provenance: "View Consumer Provenance Page",
+    batch_sealed_scan_help: "Scan QR to inspect provenance ledger & SHA-256 integrity.",
+    batch_btn_download_qr: "Download QR Code",
+    batch_btn_view_provenance: "View Provenance Page",
     batch_btn_view_my_batches: "Go to My Batches",
 
     // My Batches
     my_batches_tagline: "Beekeeper Ledger",
-    my_batches_title: "My Batches",
-    my_batches_desc: "All past batches sealed cryptographically on HoneyChain.",
+    my_batches_title: "My Honey Batches",
+    my_batches_desc: "All past batches sealed in Firestore with cryptographic SHA-256 hashes.",
     my_batches_active_bk: "Beekeeper",
     my_batches_lbl_date: "Harvest Date",
     my_batches_lbl_qty: "Quantity",
     my_batches_lbl_quality: "Quality Result",
-    my_batches_status_verified: "✅ Verified on Chain",
-    my_batches_status_error: "⚠️ Verification Issue",
+    my_batches_status_verified: "✅ Sealed in Firestore",
     my_batches_btn_view_qr: "View QR Code",
-    my_batches_empty: "No harvest batches recorded yet for this beekeeper.",
-    my_batches_btn_record_new: "Record New Honey Batch",
-    my_batches_btn_switch: "Switch Beekeeper Profile",
+    my_batches_empty: "No harvest batches recorded yet.",
+    my_batches_btn_record_new: "+ Record New Honey Batch",
 
-    // QR Modal
-    qr_modal_title: "Batch QR Code",
-    qr_modal_desc: "Scan to verify harvest origin and chain integrity.",
-    qr_modal_btn_download: "Download QR",
-    qr_modal_btn_close: "Close",
-
-    // Consumer Lookup
-    lookup_title: "Track Honey Batch",
-    lookup_desc: "Enter or scan your batch code to view the beekeeper and verified harvest origin.",
-    lookup_lbl_input: "Enter or scan batch code",
-    lookup_ph_input: "e.g. HC-8842 or HC-7109",
-    lookup_btn_track: "Track My Honey",
-    lookup_btn_scan_demo: "📷 Scan Honey Jar Label (Demo Camera)",
-    lookup_scanning_msg: "Scanning Honey Jar Label...",
+    // Consumer Lookup & Verification
+    lookup_title: "Verify Honey Authenticity",
+    lookup_desc: "Scan the QR code or enter the batch code printed on your jar to inspect verified origin.",
+    lookup_lbl_input: "Enter Batch Code (e.g. HC-8842 or HC-7109)",
+    lookup_ph_input: "HC-8842",
+    lookup_btn_track: "Verify Honey Batch",
+    lookup_btn_scan_demo: "📷 Scan Honey Jar Label (Camera)",
     lookup_lbl_bk_name: "Beekeeper Name",
-    lookup_verified_aadhaar: "(Verified via Aadhaar ✅)",
-    lookup_lbl_apiary: "Apiary Location",
+    lookup_verified_aadhaar: "(Verified Beekeeper ✅)",
+    lookup_lbl_apiary: "Apiary Origin",
     lookup_lbl_date: "Harvest Date",
-    lookup_lbl_qty: "Quantity",
-    lookup_lbl_quality: "Quality Test Result",
-    lookup_lbl_crypto: "Cryptographic Integrity",
-    lookup_chain_verified: "Chain Verified ✅",
-    lookup_chain_error: "Issue Detected ⚠️",
-    lookup_not_found_title: "No Record Found",
+    lookup_lbl_qty: "Batch Volume",
+    lookup_lbl_quality: "Purity Grade",
+    lookup_lbl_crypto: "SHA-256 Hash Integrity",
+    lookup_chain_verified: "Cryptographically Verified Authentic ✅",
+    lookup_chain_error: "Integrity Warning ⚠️",
+    lookup_not_found_title: "Batch Not Found",
     lookup_not_found_desc: "No harvest record matches \"{query}\". Please check the code printed on the jar.",
-    lookup_sample_codes: "Sample codes you can try: HC-8842 or HC-7109."
+    lookup_sample_codes: "Try sample batch codes: HC-8842 or HC-7109."
   },
   hi: {
-    // Nav
+    // Nav & Common
+    brand_title: "हनीचेन",
     nav_home: "मुख्य पृष्ठ",
     nav_my_batches: "मेरे बैच",
     nav_register: "मधुमक्खी पालक पंजीकरण",
     nav_record_harvest: "शहद दर्ज करें",
     nav_verify_honey: "शहद सत्यापन",
+    nav_admin: "एडमिन डैशबोर्ड",
+    nav_supply_chain: "सप्लाई चेन",
+    nav_logout: "लॉग आउट",
+
+    // Roles
+    role_beekeeper: "मधुमक्खी पालक",
+    role_distributor: "वितरक",
+    role_retailer: "विक्रेता",
+    role_customer: "ग्राहक",
+    role_admin: "प्रशासक",
 
     // Landing
     landing_tagline: "प्रामाणिक शहद बहीखाता",
     landing_title: "शुद्ध शहद उत्पत्ति एवं प्रमाण",
     landing_desc: "छत्ते से जार तक शुद्ध शहद की उत्पत्ति और प्रामाणिकता की जांच करें।",
-    landing_beekeeper_btn: "मैं मधुमक्खी पालक हूँ",
-    landing_consumer_btn: "मैं ग्राहक हूँ",
-
-    // Beekeeper Profile Switcher
-    select_bk_tagline: "मधुमक्खी पालन केंद्र",
-    select_bk_title: "मधुमक्खी पालक प्रोफाइल चुनें",
-    select_bk_desc: "सत्यापित प्रोफाइल चुनें या नया केंद्र पंजीकृत करें।",
-    select_bk_register_new: "+ नया मधुमक्खी पालक पंजीकृत करें",
-    select_bk_back_home: "मुख्य पृष्ठ पर लौटें",
+    landing_beekeeper_btn: "🐝 मैं मधुमक्खी पालक हूँ",
+    landing_consumer_btn: "🔍 शहद सत्यापित करें (बिना लॉगिन)",
+    landing_distributor_btn: "🚚 सप्लाई चेन लॉजिस्टिक्स",
+    landing_admin_btn: "📊 एडमिन पोर्टल",
 
     // Registration Wizard
     reg_step: "चरण {current} / {total}",
@@ -178,14 +181,14 @@ const translations = {
     reg_btn_to_phone: "मोबाइल नंबर पर आगे बढ़ें",
     reg_btn_cancel: "पंजीकरण रद्द करें",
 
-    reg_q_phone: "आपका मोबाइल नंबर क्या है?",
+    reg_q_phone: "अपना मोबाइल नंबर दर्ज करें",
     reg_lbl_phone: "१० अंकों का मोबाइल नंबर",
     reg_ph_phone: "उदा. 9876543210",
-    reg_help_phone: "इस नंबर की पुष्टि के लिए हम एक सत्यापन कोड भेजेंगे।",
-    reg_btn_to_aadhaar: "आधार पहचान पर आगे बढ़ें",
+    reg_help_phone: "हम आपके फोन पर ६ अंकों का ओटीपी भेजेंगे।",
+    reg_btn_to_aadhaar: "पहचान पर आगे बढ़ें",
     reg_btn_back: "पीछे जाएं",
 
-    reg_q_aadhaar: "अपनी आधार संख्या दर्ज करें",
+    reg_q_aadhaar: "अपनी आधार / सरकारी पहचान संख्या दर्ज करें",
     reg_lbl_aadhaar: "१२ अंकों की आधार संख्या",
     reg_ph_aadhaar: "उदा. 5432 1098 7654",
     reg_help_aadhaar: "यह आपकी पहचान को आपके शहद बैचों से जोड़ता है।",
@@ -194,30 +197,29 @@ const translations = {
     reg_q_otp: "६ अंकों का ओटीपी दर्ज करें",
     reg_lbl_otp: "६ अंकों का सत्यापन कोड",
     reg_ph_otp: "उदा. 123456",
-    reg_help_otp: "डेमो ओटीपी: आगे बढ़ने के लिए कोई भी ६ अंक दर्ज करें।",
-    reg_btn_to_village: "कोड सत्यापित करें और आगे बढ़ें",
+    reg_help_otp: "अपने फोन पर प्राप्त एसएमएस कोड दर्ज करें।",
+    reg_btn_to_village: "ओटीपी सत्यापित करें",
 
     reg_q_village: "आपका मधुमक्खी पालन केंद्र कहाँ स्थित है?",
-    reg_lbl_village: "गाँव या केंद्र का स्थान",
-    reg_ph_village: "उदा. सुंदरबन डेल्टा, सेक्टर 4",
+    reg_lbl_village: "केंद्र / गाँव का स्थान",
+    reg_ph_village: "उदा. सुंदरबन डेल्टा, सेक्टर ४",
     reg_help_village: "यह स्थान आपके शहद बैचों के साथ हमेशा के लिए दर्ज रहेगा।",
-    reg_btn_complete: "सत्यापन पूर्ण करें",
+    reg_btn_complete: "पंजीकरण पूर्ण करें",
 
     reg_conf_badge: "पंजीकरण पूर्ण",
-    reg_conf_title: "आप सत्यापित हैं ✅",
-    reg_conf_id_lbl: "आवंटित मधुमक्खी पालक आईडी",
+    reg_conf_title: "आप हनीचेन पर सत्यापित हैं ✅",
+    reg_conf_id_lbl: "आवंटित आईडी",
     reg_conf_name: "नाम",
-    reg_conf_loc: "केंद्र का स्थान",
+    reg_conf_loc: "स्थान",
     reg_conf_id_link: "जुड़ी पहचान",
-    reg_conf_sim_note: "डेमो उद्देश्यों के लिए आधार सत्यापन अनुकरण किया गया है।",
     reg_conf_btn_record: "पहला शहद बैच दर्ज करें",
     reg_conf_btn_my_batches: "मेरे बैच देखें",
     reg_conf_btn_home: "मुख्य पृष्ठ पर लौटें",
 
-    // Batch Entry
+    // Record Harvest Batch
     batch_step: "चरण {current} / {total} • {name}",
     batch_q_date: "शहद निकालने की तारीख क्या थी?",
-    batch_lbl_date: "शहद निकालने की तारीख",
+    batch_lbl_date: "तारीख",
     batch_btn_to_qty: "मात्रा पर आगे बढ़ें",
     batch_btn_cancel: "रद्द करें",
 
@@ -226,1332 +228,767 @@ const translations = {
     batch_ph_qty: "उदा. 25.0",
     batch_btn_to_quality: "गुणवत्ता जांच पर आगे बढ़ें",
 
-    batch_q_quality: "गुणवत्ता जांच परिणाम चुनें",
-    batch_lbl_quality: "शुद्धता एवं नमी जांच परिणाम",
-    batch_opt_good: "उत्कृष्ट (शुद्ध, नमी < २०%)",
-    batch_opt_avg: "सामान्य (स्वीकार्य स्तर)",
-    batch_opt_retest: "पुनः जांच आवश्यक (लंबित)",
+    batch_q_quality: "गुणवत्ता परिणाम चुनें",
+    batch_lbl_quality: "शुद्धता और नमी परीक्षण",
+    batch_opt_good: "ग्रेड ए शुद्ध (नमी < १८%)",
+    batch_opt_avg: "ग्रेड बी मानक (नमी १८-२०%)",
+    batch_opt_retest: "ग्रेड सी पुन: परीक्षण आवश्यक",
     batch_btn_to_loc: "स्थान पर आगे बढ़ें",
 
-    batch_q_loc: "केंद्र का स्थान सुनिश्चित करें",
-    batch_lbl_loc: "केंद्र / गाँव का स्थान",
-    batch_ph_loc: "उदा. सुंदरबन डेल्टा, सेक्टर 4",
-    batch_help_loc: "प्रोफाइल से स्वतः भरा गया। यदि अन्य स्थान से निकाला गया है तो बदल सकते हैं।",
+    batch_q_loc: "केंद्र का स्थान सत्यापित करें",
+    batch_lbl_loc: "स्थान",
+    batch_ph_loc: "उदा. सुंदरबन डेल्टा, सेक्टर ४",
+    batch_help_loc: "प्रोफाइल से स्वतः भरा गया।",
     batch_btn_submit: "सुरक्षित करें और क्यूआर कोड बनाएं",
 
-    batch_sealed_badge: "बैच रिकॉर्ड सील किया गया",
-    batch_sealed_title: "आपका शहद बैच अब ट्रेस करने योग्य है",
-    batch_sealed_id_lbl: "बैच आईडी",
-    batch_sealed_scan_help: "पूर्ण उत्पत्ति बहीखाता और SHA-256 अखंडता जांचने के लिए स्कैन करें।",
-    batch_btn_download_qr: "क्यूआर डाउनलोड करें",
-    batch_btn_view_provenance: "ग्राहक उत्पत्ति पृष्ठ देखें",
+    batch_sealed_badge: "बैच सील हो गया",
+    batch_sealed_title: "आपका शहद बैच अब पूरी तरह से सुरक्षित है",
+    batch_sealed_id_lbl: "बैच कोड",
+    batch_sealed_scan_help: "उत्पत्ति और प्रामाणिकता देखने के लिए स्कैन करें।",
+    batch_btn_download_qr: "क्यूआर कोड डाउनलोड करें",
+    batch_btn_view_provenance: "उत्पत्ति पृष्ठ देखें",
     batch_btn_view_my_batches: "मेरे बैच पर जाएं",
 
     // My Batches
-    my_batches_tagline: "मधुमक्खी पालक बहीखाता",
-    my_batches_title: "मेरे बैच",
-    my_batches_desc: "हनीचेन पर सुरक्षित किए गए आपके पिछले सभी शहद बैच।",
+    my_batches_tagline: "बहीखाता",
+    my_batches_title: "मेरे शहद बैच",
+    my_batches_desc: "फायरबेस में सुरक्षित सभी पिछले बैच।",
     my_batches_active_bk: "मधुमक्खी पालक",
-    my_batches_lbl_date: "निकालने की तारीख",
+    my_batches_lbl_date: "तारीख",
     my_batches_lbl_qty: "मात्रा",
-    my_batches_lbl_quality: "गुणवत्ता परिणाम",
-    my_batches_status_verified: "✅ चेन पर सत्यापित",
-    my_batches_status_error: "⚠️ सत्यापन समस्या",
+    my_batches_lbl_quality: "गुणवत्ता",
+    my_batches_status_verified: "✅ फायरबेस में सुरक्षित",
     my_batches_btn_view_qr: "क्यूआर कोड देखें",
-    my_batches_empty: "इस मधुमक्खी पालक के लिए अभी तक कोई शहद बैच दर्ज नहीं किया गया है।",
-    my_batches_btn_record_new: "नया शहद बैच दर्ज करें",
-    my_batches_btn_switch: "मधुमक्खी पालक बदलें",
+    my_batches_empty: "अभी तक कोई शहद बैच दर्ज नहीं किया गया।",
+    my_batches_btn_record_new: "+ नया शहद बैच दर्ज करें",
 
-    // QR Modal
-    qr_modal_title: "बैच क्यूआर कोड",
-    qr_modal_desc: "उत्पत्ति और चेन अखंडता सत्यापित करने के लिए स्कैन करें।",
-    qr_modal_btn_download: "क्यूआर डाउनलोड करें",
-    qr_modal_btn_close: "बंद करें",
-
-    // Consumer Lookup
-    lookup_title: "शहद बैच की जांच करें",
-    lookup_desc: "मधुमक्खी पालक और सत्यापित उत्पत्ति देखने के लिए बैच कोड दर्ज करें या स्कैन करें।",
-    lookup_lbl_input: "बैच कोड दर्ज करें या स्कैन करें",
-    lookup_ph_input: "उदा. HC-8842 या HC-7109",
-    lookup_btn_track: "मेरा शहद ट्रैक करें",
-    lookup_btn_scan_demo: "📷 शहद जार लेबल स्कैन करें (कैमरा डेमो)",
-    lookup_scanning_msg: "शहद जार लेबल स्कैन हो रहा है...",
+    // Consumer Lookup & Verification
+    lookup_title: "शहद की शुद्धता जांचें",
+    lookup_desc: "जार पर छपे कोड को दर्ज करें या क्यूआर कोड स्कैन करें।",
+    lookup_lbl_input: "बैच कोड दर्ज करें (उदा. HC-8842)",
+    lookup_ph_input: "HC-8842",
+    lookup_btn_track: "शहद सत्यापित करें",
+    lookup_btn_scan_demo: "📷 जार लेबल स्कैन करें",
     lookup_lbl_bk_name: "मधुमक्खी पालक का नाम",
-    lookup_verified_aadhaar: "(आधार द्वारा सत्यापित ✅)",
-    lookup_lbl_apiary: "केंद्र का स्थान",
-    lookup_lbl_date: "निकालने की तारीख",
+    lookup_verified_aadhaar: "(सत्यापित पालक ✅)",
+    lookup_lbl_apiary: "उत्पत्ति स्थान",
+    lookup_lbl_date: "तारीख",
     lookup_lbl_qty: "मात्रा",
-    lookup_lbl_quality: "गुणवत्ता जांच परिणाम",
-    lookup_lbl_crypto: "क्रिप्टोग्राफिक अखंडता",
-    lookup_chain_verified: "चेन सत्यापित ✅",
-    lookup_chain_error: "समस्या पाई गई ⚠️",
-    lookup_not_found_title: "कोई रिकॉर्ड नहीं मिला",
-    lookup_not_found_desc: "कोई फसल रिकॉर्ड \"{query}\" से मेल नहीं खाता। कृपया जार पर मुद्रित कोड जांचें।",
-    lookup_sample_codes: "आप इन उदाहरण कोडों को आज़मा सकते हैं: HC-8842 या HC-7109।"
+    lookup_lbl_quality: "गुणवत्ता ग्रेड",
+    lookup_lbl_crypto: "सुरक्षा जांच",
+    lookup_chain_verified: "प्रामाणिक एवं शुद्ध शहद सत्यापित ✅",
+    lookup_chain_error: "चेतावनी ⚠️",
+    lookup_not_found_title: "रिकॉर्ड नहीं मिला",
+    lookup_not_found_desc: "\"{query}\" कोड से कोई रिकॉर्ड नहीं मिला।",
+    lookup_sample_codes: "नमूना कोड: HC-8842 या HC-7109."
   }
 };
 
-// --- Initial Seed Batches with Cryptographic Hashes ---
-const initialBatches = [
-  {
-    batchId: "HC-7109",
-    beekeeperId: "BK-102",
-    beekeeperName: "Sunita Devi",
-    village: "Nilgiri Foothills, Ward 2",
-    hiveNumber: "Box #12",
-    floralSource: "Mountain Eucalyptus",
-    harvestDate: "2026-09-09",
-    weightKg: "34.0",
-    qualityResult: "Good",
-    previousHash: "0000000000000000000000000000000000000000000000000000000000000000",
-    hash: "",
-    verified: true
-  },
-  {
-    batchId: "HC-8842",
-    beekeeperId: "BK-101",
-    beekeeperName: "Ramesh Patel",
-    village: "Sundarban Delta, Sector 4",
-    hiveNumber: "Box #07",
-    floralSource: "Wild Forest Blossom",
-    harvestDate: "2026-09-08",
-    weightKg: "28.5",
-    qualityResult: "Good",
-    previousHash: "0000000000000000000000000000000000000000000000000000000000000000",
-    hash: "",
-    verified: true
-  }
-];
+// --- Language Context ---
+const LanguageContext = createContext();
 
-const initialBeekeepers = [
-  {
-    id: "BK-101",
-    name: "Ramesh Patel",
-    phone: "98765 43210",
-    aadhaarMasked: "XXXX-XXXX-4821",
-    village: "Sundarban Delta, Sector 4",
-    joinedDate: "2026-02-15",
-    isVerified: true
-  },
-  {
-    id: "BK-102",
-    name: "Sunita Devi",
-    phone: "91234 56780",
-    aadhaarMasked: "XXXX-XXXX-9103",
-    village: "Nilgiri Foothills, Ward 2",
-    joinedDate: "2026-03-01",
-    isVerified: true
-  }
-];
+function LanguageProvider({ children }) {
+  const [lang, setLang] = useState("en");
 
-// --- React Context ---
-const HoneyChainContext = createContext(null);
-
-function HoneyChainProvider({ children }) {
-  const [language, setLanguage] = useState("en");
-  const [currentPage, setCurrentPage] = useState("landing");
-  const [pageParams, setPageParams] = useState({});
-  const [beekeepers, setBeekeepers] = useState(initialBeekeepers);
-  const [batches, setBatches] = useState(initialBatches);
-  const [activeBeekeeperId, setActiveBeekeeperId] = useState(null); // Unregistered by default; enabled upon registration
-
-  // Translation helper function
   const t = (key, params = {}) => {
-    const dict = translations[language] || translations.en;
-    let text = dict[key] || translations.en[key] || key;
-    Object.keys(params).forEach((p) => {
-      text = text.replace(new RegExp(`\\{${p}\\}`, "g"), params[p]);
+    let text = translations[lang]?.[key] || translations["en"]?.[key] || key;
+    Object.keys(params).forEach(p => {
+      text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
     });
     return text;
   };
 
-  const toggleLanguage = () => {
-    setLanguage((prev) => (prev === "en" ? "hi" : "en"));
-  };
+  return (
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
 
-  // Initialize hash chain values on mount
+function useTranslation() {
+  return useContext(LanguageContext);
+}
+
+// ==========================================================================
+// Main HoneyChain Application Component
+// ==========================================================================
+function HoneyChainApp() {
+  const { lang, setLang, t } = useTranslation();
+
+  // Navigation views: 'landing' | 'register' | 'record' | 'my-batches' | 'verify' | 'admin' | 'supply-chain' | 'admin-login'
+  const [currentView, setCurrentView] = useState("landing");
+  
+  // Auth state
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentProfile, setCurrentProfile] = useState(null);
+  const [userRole, setUserRole] = useState("customer"); // 'beekeeper' | 'distributor' | 'retailer' | 'customer' | 'admin'
+  const [activeBeekeeper, setActiveBeekeeper] = useState({
+    beekeeperId: "BK-1042",
+    name: "Anand Kumar",
+    phone: "+919876543210",
+    farmLocation: "Sundarban Delta, Sector 4",
+    aadhaarMasked: "XXXX-XXXX-7654"
+  });
+
+  // Modal states
+  const [qrModalBatch, setQrModalBatch] = useState(null);
+  const [firebaseModalOpen, setFirebaseModalOpen] = useState(false);
+  const [firebaseConnected, setFirebaseConnected] = useState(false);
+
+  // Check URL query parameters for direct QR verification links (?batchId=HC-8842)
+  const [initialSearchCode, setInitialSearchCode] = useState("");
+
   useEffect(() => {
-    async function initSeedHashes() {
-      if (window.HoneyChainHash) {
-        // Build chain from oldest (batches[1]) to newest (batches[0])
-        const b1Hash = await window.HoneyChainHash.createBatchHash(
-          initialBatches[1],
-          window.HoneyChainHash.GENESIS_HASH
-        );
-        const b2Hash = await window.HoneyChainHash.createBatchHash(
-          initialBatches[0],
-          b1Hash
-        );
-        setBatches([
-          { ...initialBatches[0], previousHash: b1Hash, hash: b2Hash },
-          { ...initialBatches[1], previousHash: window.HoneyChainHash.GENESIS_HASH, hash: b1Hash }
-        ]);
-      }
+    const params = new URLSearchParams(window.location.search);
+    const batchIdParam = params.get("batchId");
+    if (batchIdParam) {
+      setInitialSearchCode(batchIdParam);
+      setCurrentView("verify");
     }
-    initSeedHashes();
+
+    // Subscribe to Firebase Auth
+    if (window.authService) {
+      const unsubscribe = window.authService.onAuthStateChanged((user, profile) => {
+        setCurrentUser(user);
+        setCurrentProfile(profile);
+        if (profile?.role) {
+          setUserRole(profile.role);
+          if (profile.role === "beekeeper") {
+            setActiveBeekeeper({
+              beekeeperId: profile.beekeeperId || `BK-${(profile.userId || "1042").slice(-4)}`,
+              name: profile.name || "Verified Beekeeper",
+              phone: profile.phone || "",
+              farmLocation: profile.farmLocation || "Apiary Location",
+              aadhaarMasked: profile.aadhaarMasked || "Verified"
+            });
+          }
+        }
+      });
+      return () => {
+        if (typeof unsubscribe === "function") unsubscribe();
+      };
+    }
   }, []);
 
-  const navigate = (page, params = {}) => {
-    setCurrentPage(page);
-    setPageParams(params);
-    window.scrollTo(0, 0);
-  };
-
-  const registerBeekeeper = (beekeeperData) => {
-    const newId = `BK-${100 + beekeepers.length + 1}`;
-    const rawAadhaar = beekeeperData.aadhaar || "000000000000";
-    const last4 = rawAadhaar.slice(-4) || "0000";
-    const masked = `XXXX-XXXX-${last4}`;
-
-    const newRecord = {
-      ...beekeeperData,
-      id: newId,
-      aadhaarMasked: masked,
-      joinedDate: new Date().toISOString().split("T")[0],
-      isVerified: true
-    };
-    setBeekeepers((prev) => [newRecord, ...prev]);
-    setActiveBeekeeperId(newId);
-    return newRecord;
-  };
-
-  const createBatch = async (batchData) => {
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const newBatchId = `HC-${randomSuffix}`;
-    const lastBatch = batches[0];
-    const prevHash = lastBatch ? lastBatch.hash : (window.HoneyChainHash?.GENESIS_HASH || "0000000000000000000000000000000000000000000000000000000000000000");
-
-    const newBatchPayload = {
-      ...batchData,
-      batchId: newBatchId,
-      previousHash: prevHash,
-      verified: true
-    };
-
-    let computedHash = "simulated_sha256_" + Math.random().toString(36).substring(2);
-    if (window.HoneyChainHash) {
-      computedHash = await window.HoneyChainHash.createBatchHash(newBatchPayload, prevHash);
-    }
-
-    const completedBatch = {
-      ...newBatchPayload,
-      hash: computedHash
-    };
-
-    setBatches((prev) => [completedBatch, ...prev]);
-    return completedBatch;
-  };
-
-  const findBatch = (idQuery) => {
-    if (!idQuery) return null;
-    const cleanQuery = idQuery.trim().toUpperCase();
-    return batches.find((b) => b.batchId.toUpperCase() === cleanQuery) || null;
-  };
-
-  const activeBeekeeper = activeBeekeeperId
-    ? beekeepers.find((b) => b.id === activeBeekeeperId) || null
-    : null;
+  useEffect(() => {
+    setFirebaseConnected(window.firebaseManager?.isLiveConnected || false);
+  }, [currentView]);
 
   return (
-    <HoneyChainContext.Provider
-      value={{
-        language,
-        setLanguage,
-        toggleLanguage,
-        t,
-        currentPage,
-        pageParams,
-        navigate,
-        beekeepers,
-        batches,
-        activeBeekeeperId,
-        setActiveBeekeeperId,
-        activeBeekeeper,
-        registerBeekeeper,
-        createBatch,
-        findBatch
-      }}
-    >
-      {children}
-    </HoneyChainContext.Provider>
-  );
-}
-
-function useHoneyChain() {
-  const context = useContext(HoneyChainContext);
-  if (!context) {
-    throw new Error("useHoneyChain must be used within HoneyChainProvider");
-  }
-  return context;
-}
-
-// --- Step Progress Dots Component ---
-function StepTracker({ currentStep, totalSteps }) {
-  return (
-    <div className="hc-step-tracker" aria-label={`Step ${currentStep} of ${totalSteps}`}>
-      {Array.from({ length: totalSteps }).map((_, idx) => {
-        const stepNum = idx + 1;
-        let statusClass = "";
-        if (stepNum === currentStep) statusClass = "active";
-        else if (stepNum < currentStep) statusClass = "completed";
-        return <span key={stepNum} className={`hc-step-dot ${statusClass}`} />;
-      })}
-    </div>
-  );
-}
-
-// --- Navigation Bar (Text Only, English / हिंदी Toggle) ---
-function NavigationBar() {
-  const { currentPage, navigate, activeBeekeeper, language, toggleLanguage, t } = useHoneyChain();
-
-  const isVerifiedBeekeeper = Boolean(activeBeekeeper && activeBeekeeper.isVerified);
-
-  const navItems = [
-    { key: "landing", label: t("nav_home") },
-    ...(isVerifiedBeekeeper ? [{ key: "my-batches", label: t("nav_my_batches") }] : []),
-    { key: "register", label: t("nav_register") },
-    { key: "batch-entry", label: t("nav_record_harvest") },
-    { key: "lookup", label: t("nav_verify_honey") }
-  ];
-
-  return (
-    <nav className="hc-nav-bar" aria-label="Main Navigation">
-      <div className="hc-nav-container">
-        <div className="hc-brand-group" onClick={() => navigate("landing")}>
-          <img src="logo.svg" alt="HoneyChain Logo" className="hc-brand-logo" width="34" height="34" />
-          <span className="hc-brand-text">HoneyChain</span>
-        </div>
-        
-        <div className="hc-nav-links">
-          {navItems.map((item) => {
-            const isActive = currentPage === item.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                className={`hc-nav-link ${isActive ? "active" : ""}`}
-                onClick={() => navigate(item.key)}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Text-Only Language Toggle (No Flag Icons) */}
-        <button
-          type="button"
-          className="hc-lang-toggle"
-          onClick={toggleLanguage}
-          aria-label="Toggle language: English or Hindi"
-          title="Switch Language / भाषा बदलें"
+    <div className="hc-app-container">
+      {/* Header */}
+      <header className="hc-header">
+        <div 
+          className="hc-brand" 
+          onClick={() => setCurrentView("landing")} 
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
         >
-          <span className={language === "en" ? "hc-lang-active" : "hc-lang-inactive"}>English</span>
-          <span className="hc-lang-sep">/</span>
-          <span className={language === "hi" ? "hc-lang-active" : "hc-lang-inactive"}>हिंदी</span>
-        </button>
-      </div>
-    </nav>
-  );
-}
+          <img src="logo.svg" alt="HoneyChain Logo" style={{ width: 34, height: 34 }} />
+          <span style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text)" }}>
+            {t("brand_title")}
+          </span>
+        </div>
 
-// --- 1. Landing Page ---
-function LandingPage() {
-  const { navigate, activeBeekeeper, t } = useHoneyChain();
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Firebase Connection Status Pill */}
+          <button 
+            type="button"
+            className={`hc-firebase-pill ${firebaseConnected ? "connected" : ""}`}
+            onClick={() => setFirebaseModalOpen(true)}
+            title="Click to view/configure Firebase connection"
+          >
+            🔥 {firebaseConnected ? "Firebase Live" : "Firebase Ready"}
+          </button>
 
-  const handleBeekeeperClick = () => {
-    if (activeBeekeeper && activeBeekeeper.isVerified) {
-      navigate("my-batches");
-    } else {
-      navigate("register");
-    }
-  };
-
-  return (
-    <div className="hc-screen-container">
-      <header className="hc-header" style={{ textAlign: "center" }}>
-        <span className="hc-tagline">{t("landing_tagline")}</span>
-        <h1 className="hc-h1" style={{ fontSize: "2.5rem", marginTop: "8px", marginBottom: "12px" }}>
-          {t("landing_title")}
-        </h1>
-        <p className="hc-body" style={{ maxWidth: "460px", margin: "0 auto" }}>
-          {t("landing_desc")}
-        </p>
+          {/* Language Switcher */}
+          <button 
+            type="button" 
+            className="hc-lang-toggle"
+            onClick={() => setLang(lang === "en" ? "hi" : "en")}
+            style={{ 
+              background: "transparent", 
+              border: "2px solid var(--color-border-input)", 
+              borderRadius: "14px", 
+              padding: "6px 12px", 
+              fontWeight: 600, 
+              cursor: "pointer" 
+            }}
+          >
+            {lang === "en" ? "🇮🇳 हिंदी" : "🇬🇧 English"}
+          </button>
+        </div>
       </header>
 
-      {/* Single Simple Minimalist Honey Hive & Floating Bee Illustration */}
-      <main className="hc-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-        <div className="hc-illustration hc-float-bee" aria-hidden="true">
-          <svg width="150" height="150" viewBox="0 0 100 100" fill="none" stroke="#3A2E26" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            {/* Minimalist Artisan Beehive */}
-            <path d="M50 14 C32 14 24 24 24 32 C24 38 28 42 28 48 C28 54 22 58 22 66 C22 76 32 82 50 82 C68 82 78 76 78 66 C78 58 72 54 72 48 C72 42 76 38 76 32 C76 24 68 14 50 14 Z" />
-            <path d="M30 36 H70" />
-            <path d="M26 52 H74" />
-            <path d="M28 68 H72" />
-            {/* Beehive Door */}
-            <ellipse cx="50" cy="68" rx="8" ry="6" fill="#3A2E26" />
-            
-            {/* Warm Orange Golden Honey Drop */}
-            <path d="M50 38 C46 43 42 46 42 50 A8 8 0 0 0 58 50 C58 46 54 43 50 38 Z" fill="#E8892B" stroke="#E8892B" strokeWidth="1.5" />
-            
-            {/* Minimalist Line Bee Accent */}
-            <ellipse cx="78" cy="24" rx="5" ry="3" fill="#E8892B" stroke="#3A2E26" strokeWidth="1.5" />
-            <path d="M78 21 C76 17 73 17 74 20" stroke="#3A2E26" strokeWidth="1.5" />
-            <path d="M80 21 C82 17 85 17 84 20" stroke="#3A2E26" strokeWidth="1.5" />
-          </svg>
-        </div>
+      {/* Main Content Area */}
+      <main className="hc-main-content">
+        {currentView === "landing" && (
+          <LandingView 
+            onNavigate={setCurrentView} 
+            userRole={userRole} 
+            setUserRole={setUserRole} 
+          />
+        )}
+
+        {currentView === "register" && (
+          <BeekeeperRegistrationWizard 
+            onCancel={() => setCurrentView("landing")}
+            onComplete={(newProfile) => {
+              setActiveBeekeeper(newProfile);
+              setUserRole("beekeeper");
+              setCurrentView("my-batches");
+            }}
+          />
+        )}
+
+        {currentView === "record" && (
+          <RecordHarvestWizard 
+            activeBeekeeper={activeBeekeeper}
+            onCancel={() => setCurrentView("my-batches")}
+            onComplete={(sealedBatch) => {
+              setQrModalBatch(sealedBatch);
+              setCurrentView("my-batches");
+            }}
+          />
+        )}
+
+        {currentView === "my-batches" && (
+          <MyBatchesView 
+            activeBeekeeper={activeBeekeeper}
+            onRecordNew={() => setCurrentView("record")}
+            onOpenQr={(batch) => setQrModalBatch(batch)}
+            onNavigate={setCurrentView}
+          />
+        )}
+
+        {currentView === "verify" && (
+          <ConsumerVerificationView 
+            initialCode={initialSearchCode}
+            onNavigate={setCurrentView}
+          />
+        )}
+
+        {currentView === "supply-chain" && (
+          <SupplyChainManagerView 
+            onNavigate={setCurrentView}
+            currentUser={currentUser}
+          />
+        )}
+
+        {currentView === "admin-login" && (
+          <AdminLoginView 
+            onSuccess={() => {
+              setUserRole("admin");
+              setCurrentView("admin");
+            }}
+            onCancel={() => setCurrentView("landing")}
+          />
+        )}
+
+        {currentView === "admin" && (
+          <AdminDashboardView 
+            onNavigate={setCurrentView}
+            onOpenQr={(batch) => setQrModalBatch(batch)}
+          />
+        )}
       </main>
 
-      {/* Two Large Buttons Only */}
-      <footer className="hc-footer-action hc-stack-md">
-        <button
-          className="hc-button-primary"
-          type="button"
-          onClick={handleBeekeeperClick}
-        >
-          <span>{t("landing_beekeeper_btn")}</span>
-        </button>
+      {/* QR Code Modal Popup */}
+      {qrModalBatch && (
+        <BatchQrModal 
+          batch={qrModalBatch} 
+          onClose={() => setQrModalBatch(null)} 
+        />
+      )}
 
-        <button
-          className="hc-button-secondary"
-          type="button"
-          onClick={() => navigate("lookup")}
-        >
-          <span>{t("landing_consumer_btn")}</span>
-        </button>
-      </footer>
+      {/* Firebase Config Modal */}
+      {firebaseModalOpen && (
+        <FirebaseConfigModal 
+          onClose={() => {
+            setFirebaseModalOpen(false);
+            setFirebaseConnected(window.firebaseManager?.isLiveConnected || false);
+          }} 
+        />
+      )}
     </div>
   );
 }
 
-// --- 2. Beekeeper Registration Wizard (One Question Per Screen) ---
-function BeekeeperRegistrationPage() {
-  const { registerBeekeeper, navigate, t } = useHoneyChain();
-  const [step, setStep] = useState(1);
+// ==========================================================================
+// 1. Landing View Component
+// ==========================================================================
+function LandingView({ onNavigate, userRole, setUserRole }) {
+  const { t } = useTranslation();
 
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.3s ease" }}>
+      <span className="hc-tagline">{t("landing_tagline")}</span>
+      <h1 style={{ fontSize: "var(--font-size-h1)", lineHeight: 1.25, margin: "4px 0" }}>
+        {t("landing_title")}
+      </h1>
+      <p style={{ color: "var(--color-text-muted)", fontSize: "var(--font-size-base)", lineHeight: 1.5 }}>
+        {t("landing_desc")}
+      </p>
+
+      {/* Bee Illustration */}
+      <div className="hc-illustration hc-float-bee">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="6" fill="var(--color-accent-light)"/>
+          <path d="M12 6c-2.5 0-4.5 2-4.5 4.5"/>
+          <path d="M12 18c2.5 0 4.5-2 4.5-4.5"/>
+          <path d="M6 12H3"/>
+          <path d="M21 12h-3"/>
+          <path d="m15 9 3-3"/>
+          <path d="m6 18 3-3"/>
+          <circle cx="9" cy="10" r="1" fill="var(--color-accent)"/>
+          <circle cx="15" cy="14" r="1" fill="var(--color-accent)"/>
+        </svg>
+      </div>
+
+      {/* Action Buttons for Roles */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "var(--spacing-sm)" }}>
+        {/* Customer Instant Verification (No Login) */}
+        <button 
+          type="button" 
+          className="hc-button-primary"
+          onClick={() => onNavigate("verify")}
+        >
+          {t("landing_consumer_btn")}
+        </button>
+
+        {/* Beekeeper Portal */}
+        <button 
+          type="button" 
+          className="hc-button-secondary"
+          onClick={() => onNavigate("register")}
+        >
+          {t("landing_beekeeper_btn")}
+        </button>
+
+        {/* Supply Chain Custody */}
+        <button 
+          type="button" 
+          className="hc-button-secondary"
+          onClick={() => onNavigate("supply-chain")}
+        >
+          {t("landing_distributor_btn")}
+        </button>
+
+        {/* Admin Dashboard */}
+        <button 
+          type="button" 
+          className="hc-button-text"
+          onClick={() => onNavigate("admin-login")}
+        >
+          {t("landing_admin_btn")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================================
+// 2. Beekeeper Registration Wizard (Phone OTP + Aadhaar)
+// ==========================================================================
+function BeekeeperRegistrationWizard({ onCancel, onComplete }) {
+  const { t } = useTranslation();
+  const [step, setStep] = useState(1); // 1: Name, 2: Phone, 3: Aadhaar, 4: OTP, 5: Farm Location, 6: Completed
+  
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [aadhaar, setAadhaar] = useState("");
   const [otp, setOtp] = useState("");
   const [village, setVillage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpNotice, setOtpNotice] = useState("");
+  const [createdProfile, setCreatedProfile] = useState(null);
 
-  const [registeredProfile, setRegisteredProfile] = useState(null);
-
-  const handleAadhaarChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
-    setAadhaar(raw);
+  const handleSendOtp = async () => {
+    if (!phone || phone.length < 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const result = await window.authService.sendPhoneOTP(phone);
+      setOtpNotice(result.message || "OTP code sent to your phone.");
+      setStep(4);
+    } catch (e) {
+      alert(e.message || "Failed to send verification code.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
-    setPhone(raw);
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length < 4) {
+      alert("Please enter the verification code.");
+      return;
+    }
+    setStep(5);
   };
 
-  const handleOtpChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
-    setOtp(raw);
+  const handleCompleteRegistration = async () => {
+    if (!village) {
+      alert("Please enter your farm / apiary location.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const profile = await window.authService.verifyPhoneOTP(otp, {
+        name,
+        phone,
+        aadhaar,
+        farmLocation: village,
+        role: "beekeeper"
+      });
+      setCreatedProfile(profile);
+      setStep(6);
+    } catch (e) {
+      alert(e.message || "Failed to complete registration.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleCompleteRegistration = () => {
-    const record = registerBeekeeper({
-      name: name.trim(),
-      phone: phone.trim(),
-      aadhaar: aadhaar.trim(),
-      village: village.trim()
-    });
-    setRegisteredProfile(record);
-    setStep("confirmed");
-  };
-
-  // Confirmation View
-  if (step === "confirmed" && registeredProfile) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-icon-text-pair" style={{ marginBottom: "16px" }}>
-            <svg className="hc-icon-lg" viewBox="0 0 24 24">
-              <polyline className="hc-animated-check" points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span className="hc-h2" style={{ marginBottom: 0 }}>{t("reg_conf_badge")}</span>
-          </div>
-          <h1 className="hc-h1">{t("reg_conf_title")}</h1>
-          <span className="hc-text-muted">{t("reg_conf_id_lbl")}</span>
-          <div className="hc-display-number">{registeredProfile.id}</div>
-        </header>
-
-        <main className="hc-content hc-stack-md">
-          <p className="hc-body">
-            {t("reg_conf_name")}: <strong>{registeredProfile.name}</strong>
-            <br />
-            {t("reg_conf_loc")}: <strong>{registeredProfile.village}</strong>
-            <br />
-            {t("reg_conf_id_link")}: <strong>{registeredProfile.aadhaarMasked}</strong>
-          </p>
-
-          <p className="hc-text-muted" style={{ fontStyle: "italic" }}>
-            {t("reg_conf_sim_note")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            onClick={() => navigate("batch-entry", { selectedBeekeeperId: registeredProfile.id })}
-          >
-            <span>{t("reg_conf_btn_record")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      {step <= 5 && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className="hc-tagline">{t("reg_step", { current: step, total: 5 })}</span>
+          <button type="button" className="hc-button-text" style={{ width: "auto", padding: 0 }} onClick={onCancel}>
+            {t("reg_btn_cancel")}
           </button>
+        </div>
+      )}
 
-          <button
-            className="hc-button-secondary"
-            type="button"
-            onClick={() => navigate("my-batches")}
-          >
-            <span>{t("reg_conf_btn_my_batches")}</span>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => navigate("landing")}
-          >
-            <span>{t("reg_conf_btn_home")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 1: Name
-  if (step === 1) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("reg_step", { current: 1, total: 5 })}</span>
-            <StepTracker currentStep={1} totalSteps={5} />
-          </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("reg_q_name")}</h1>
-        </header>
-
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-name">
-            {t("reg_lbl_name")}
-          </label>
-          <input
-            id="step-name"
-            className="hc-input"
-            type="text"
+      {/* Step 1: Full Name */}
+      {step === 1 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("reg_q_name")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("reg_lbl_name")}</label>
+          <input 
+            type="text" 
+            className="hc-input" 
             placeholder={t("reg_ph_name")}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
             autoFocus
           />
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={!name.trim()}
-            onClick={() => setStep(2)}
-          >
-            <span>{t("reg_btn_to_phone")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => navigate("landing")}
-          >
-            <span>{t("reg_btn_cancel")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 2: Phone Number
-  if (step === 2) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("reg_step", { current: 2, total: 5 })}</span>
-            <StepTracker currentStep={2} totalSteps={5} />
+          <div style={{ marginTop: "var(--spacing-lg)" }}>
+            <button 
+              type="button" 
+              className="hc-button-primary" 
+              disabled={!name.trim()} 
+              onClick={() => setStep(2)}
+            >
+              {t("reg_btn_to_phone")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("reg_q_phone")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-phone">
-            {t("reg_lbl_phone")}
-          </label>
-          <input
-            id="step-phone"
-            className="hc-input"
-            type="tel"
+      {/* Step 2: Phone Number */}
+      {step === 2 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("reg_q_phone")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("reg_lbl_phone")}</label>
+          <input 
+            type="tel" 
+            className="hc-input" 
             placeholder={t("reg_ph_phone")}
-            value={phone}
-            onChange={handlePhoneChange}
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value)} 
             autoFocus
           />
-          <p className="hc-text-muted" style={{ marginTop: "12px", marginBottom: 0 }}>
-            {t("reg_help_phone")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={phone.length < 10}
-            onClick={() => setStep(3)}
-          >
-            <span>{t("reg_btn_to_aadhaar")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(1)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 3: Aadhaar Number
-  if (step === 3) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("reg_step", { current: 3, total: 5 })}</span>
-            <StepTracker currentStep={3} totalSteps={5} />
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "8px 0" }}>{t("reg_help_phone")}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(1)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={phone.length < 10} onClick={() => setStep(3)}>{t("reg_btn_to_aadhaar")}</button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("reg_q_aadhaar")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-aadhaar">
-            {t("reg_lbl_aadhaar")}
-          </label>
-          <input
-            id="step-aadhaar"
-            className="hc-input"
-            type="text"
+      {/* Step 3: Aadhaar Number */}
+      {step === 3 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("reg_q_aadhaar")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("reg_lbl_aadhaar")}</label>
+          <input 
+            type="text" 
+            className="hc-input" 
             placeholder={t("reg_ph_aadhaar")}
-            value={aadhaar}
-            onChange={handleAadhaarChange}
+            value={aadhaar} 
+            onChange={(e) => setAadhaar(e.target.value)} 
             autoFocus
           />
-          <p className="hc-text-muted" style={{ marginTop: "12px", marginBottom: 0 }}>
-            {t("reg_help_aadhaar")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={aadhaar.length < 12}
-            onClick={() => setStep(4)}
-          >
-            <span>{t("reg_btn_to_otp")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(2)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 4: Simulated OTP
-  if (step === 4) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("reg_step", { current: 4, total: 5 })}</span>
-            <StepTracker currentStep={4} totalSteps={5} />
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "8px 0" }}>{t("reg_help_aadhaar")}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(2)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={isSubmitting || !aadhaar} onClick={handleSendOtp}>
+              {isSubmitting ? "Sending OTP..." : t("reg_btn_to_otp")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("reg_q_otp")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-otp">
-            {t("reg_lbl_otp")}
-          </label>
-          <input
-            id="step-otp"
-            className="hc-input"
-            type="text"
+      {/* Step 4: OTP Verification */}
+      {step === 4 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("reg_q_otp")}</h2>
+          {otpNotice && (
+            <div style={{ background: "var(--color-accent-light)", padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: "0.95rem" }}>
+              📲 {otpNotice}
+            </div>
+          )}
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("reg_lbl_otp")}</label>
+          <input 
+            type="text" 
+            className="hc-input" 
             placeholder={t("reg_ph_otp")}
-            value={otp}
-            onChange={handleOtpChange}
+            value={otp} 
+            maxLength="6"
+            onChange={(e) => setOtp(e.target.value)} 
             autoFocus
           />
-          <p className="hc-text-muted" style={{ marginTop: "12px", marginBottom: 0 }}>
-            {t("reg_help_otp")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={otp.length < 6}
-            onClick={() => setStep(5)}
-          >
-            <span>{t("reg_btn_to_village")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(3)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 5: Apiary Location
-  if (step === 5) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("reg_step", { current: 5, total: 5 })}</span>
-            <StepTracker currentStep={5} totalSteps={5} />
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "8px 0" }}>{t("reg_help_otp")}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(3)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={otp.length < 4} onClick={handleVerifyOtp}>
+              {t("reg_btn_to_village")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("reg_q_village")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-village">
-            {t("reg_lbl_village")}
-          </label>
-          <input
-            id="step-village"
-            className="hc-input"
-            type="text"
+      {/* Step 5: Farm Location */}
+      {step === 5 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("reg_q_village")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("reg_lbl_village")}</label>
+          <input 
+            type="text" 
+            className="hc-input" 
             placeholder={t("reg_ph_village")}
-            value={village}
-            onChange={(e) => setVillage(e.target.value)}
+            value={village} 
+            onChange={(e) => setVillage(e.target.value)} 
             autoFocus
           />
-          <p className="hc-text-muted" style={{ marginTop: "12px", marginBottom: 0 }}>
-            {t("reg_help_village")}
-          </p>
-        </main>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "8px 0" }}>{t("reg_help_village")}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(4)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={isSubmitting || !village.trim()} onClick={handleCompleteRegistration}>
+              {isSubmitting ? "Registering in Firestore..." : t("reg_btn_complete")}
+            </button>
+          </div>
+        </div>
+      )}
 
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
+      {/* Step 6: Confirmation Screen */}
+      {step === 6 && createdProfile && (
+        <div style={{ textAlign: "center", animation: "hcPopIn 0.3s ease" }}>
+          <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>✅</div>
+          <span className="hc-tagline">{t("reg_conf_badge")}</span>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 16px 0" }}>{t("reg_conf_title")}</h2>
+
+          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 18, padding: 18, textAlign: "left", marginBottom: 20 }}>
+            <div style={{ marginBottom: 8 }}>
+              <span className="hc-provenance-label">{t("reg_conf_id_lbl")}: </span>
+              <strong style={{ color: "var(--color-accent)" }}>{createdProfile.beekeeperId || "BK-1042"}</strong>
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <span className="hc-provenance-label">{t("reg_conf_name")}: </span>
+              <strong>{createdProfile.name}</strong>
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <span className="hc-provenance-label">{t("reg_conf_loc")}: </span>
+              <strong>{createdProfile.farmLocation}</strong>
+            </div>
+            <div>
+              <span className="hc-provenance-label">{t("reg_conf_id_link")}: </span>
+              <strong>{createdProfile.phone} • {createdProfile.aadhaarMasked || "Verified"}</strong>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
             className="hc-button-primary"
-            type="button"
-            disabled={!village.trim()}
-            onClick={handleCompleteRegistration}
+            onClick={() => onComplete(createdProfile)}
           >
-            <span>{t("reg_btn_complete")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+            {t("reg_conf_btn_record")}
           </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(4)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  return null;
+        </div>
+      )}
+    </div>
+  );
 }
 
-// --- 3. Batch Entry Page (Step-by-Step, One Field Per Screen) ---
-function BatchEntryPage() {
-  const { beekeepers, activeBeekeeper, createBatch, pageParams, navigate, t } = useHoneyChain();
+// ==========================================================================
+// 3. Record Harvest Wizard (SHA-256 Cryptographic Hash + QR Code Generator)
+// ==========================================================================
+function RecordHarvestWizard({ activeBeekeeper, onCancel, onComplete }) {
+  const { t } = useTranslation();
+  const [step, setStep] = useState(1); // 1: Date, 2: Quantity, 3: Quality, 4: Location, 5: Sealed
+  
+  const today = new Date().toISOString().split("T")[0];
+  const [harvestDate, setHarvestDate] = useState(today);
+  const [quantity, setQuantity] = useState("25.0");
+  const [qualityGrade, setQualityGrade] = useState("Good");
+  const [location, setLocation] = useState(activeBeekeeper?.farmLocation || "Sundarban Delta, Sector 4");
+  const [isSealing, setIsSealing] = useState(false);
+  const [sealedBatch, setSealedBatch] = useState(null);
 
-  const selectedBeekeeper = beekeepers.find((b) => b.id === pageParams.selectedBeekeeperId) || activeBeekeeper || beekeepers[0] || {
-    id: "BK-101",
-    name: "Ramesh Patel",
-    village: "Sundarban Delta, Sector 4"
-  };
-
-  const [step, setStep] = useState(1);
-  const [harvestDate, setHarvestDate] = useState(new Date().toISOString().split("T")[0]);
-  const [quantityKg, setQuantityKg] = useState("");
-  const [qualityResult, setQualityResult] = useState("Good");
-  const [location, setLocation] = useState(selectedBeekeeper.village || "");
-  const [createdBatch, setCreatedBatch] = useState(null);
-
-  const qrContainerRef = useRef(null);
-
-  useEffect(() => {
-    if (step === "completed" && createdBatch && qrContainerRef.current) {
-      qrContainerRef.current.innerHTML = "";
-      if (window.QRCode) {
-        new window.QRCode(qrContainerRef.current, {
-          text: `https://honeychain.org/verify?batch=${createdBatch.batchId}`,
-          width: 180,
-          height: 180,
-          colorDark: "#3A2E26",
-          colorLight: "#FFFFFF",
-          correctLevel: window.QRCode.CorrectLevel.H
-        });
-      }
-    }
-  }, [step, createdBatch]);
-
-  const handleFinalSubmit = async () => {
-    const newRecord = await createBatch({
-      beekeeperId: selectedBeekeeper.id,
-      beekeeperName: selectedBeekeeper.name,
-      village: location.trim() || selectedBeekeeper.village,
-      hiveNumber: "Apiary Box #01",
-      floralSource: "Pure Multifloral Blossom",
-      harvestDate: harvestDate,
-      weightKg: quantityKg.trim(),
-      qualityResult: qualityResult
-    });
-
-    setCreatedBatch(newRecord);
-    setStep("completed");
-  };
-
-  const handleDownloadQR = () => {
-    if (!qrContainerRef.current) return;
-    const canvas = qrContainerRef.current.querySelector("canvas");
-    const img = qrContainerRef.current.querySelector("img");
-
-    let dataUrl = "";
-    if (canvas) {
-      dataUrl = canvas.toDataURL("image/png");
-    } else if (img && img.src) {
-      dataUrl = img.src;
-    }
-
-    if (dataUrl) {
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `HoneyChain_QR_${createdBatch?.batchId || "Batch"}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+  const handleSealBatch = async () => {
+    setIsSealing(true);
+    try {
+      const batchRecord = await window.batchService.createBatch({
+        beekeeperId: activeBeekeeper?.beekeeperId || "BK-1042",
+        beekeeperName: activeBeekeeper?.name || "Verified Beekeeper",
+        harvestDate,
+        quantity: Number(quantity),
+        qualityGrade,
+        location
+      });
+      setSealedBatch(batchRecord);
+      setStep(5);
+    } catch (e) {
+      alert("Error sealing batch in Firestore: " + e.message);
+    } finally {
+      setIsSealing(false);
     }
   };
 
-  // Result Screen
-  if (step === "completed" && createdBatch) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header" style={{ textAlign: "center" }}>
-          <span className="hc-tagline">{t("batch_sealed_badge")}</span>
-          <h1 className="hc-h1" style={{ marginTop: "8px" }}>
-            {t("batch_sealed_title")}
-          </h1>
-          <p className="hc-body">
-            {t("batch_sealed_id_lbl")}: <strong>{createdBatch.batchId}</strong>
-          </p>
-        </header>
-
-        <main className="hc-content" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div className="hc-qr-wrapper" ref={qrContainerRef}>
-            {/* QRCode attaches here */}
-          </div>
-          <p className="hc-text-muted" style={{ textAlign: "center", marginTop: "8px" }}>
-            {t("batch_sealed_scan_help")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            onClick={handleDownloadQR}
-          >
-            <span>{t("batch_btn_download_qr")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      {step <= 4 && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className="hc-tagline">{t("batch_step", { current: step, total: 4, name: activeBeekeeper?.name || "Beekeeper" })}</span>
+          <button type="button" className="hc-button-text" style={{ width: "auto", padding: 0 }} onClick={onCancel}>
+            {t("batch_btn_cancel")}
           </button>
+        </div>
+      )}
 
-          <button
-            className="hc-button-secondary"
-            type="button"
-            onClick={() => navigate("my-batches")}
-          >
-            <span>{t("batch_btn_view_my_batches")}</span>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => navigate("lookup", { autoQuery: createdBatch.batchId })}
-          >
-            <span>{t("batch_btn_view_provenance")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 1: Harvest Date
-  if (step === 1) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("batch_step", { current: 1, total: 4, name: selectedBeekeeper.name })}</span>
-            <StepTracker currentStep={1} totalSteps={4} />
-          </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("batch_q_date")}</h1>
-        </header>
-
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-date">
-            {t("batch_lbl_date")}
-          </label>
-          <input
-            id="step-date"
-            className="hc-input"
-            type="date"
-            value={harvestDate}
-            onChange={(e) => setHarvestDate(e.target.value)}
-            autoFocus
-            required
+      {/* Step 1: Harvest Date */}
+      {step === 1 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_date")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_date")}</label>
+          <input 
+            type="date" 
+            className="hc-input" 
+            value={harvestDate} 
+            onChange={(e) => setHarvestDate(e.target.value)} 
           />
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={!harvestDate}
-            onClick={() => setStep(2)}
-          >
-            <span>{t("batch_btn_to_qty")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => navigate("landing")}
-          >
-            <span>{t("batch_btn_cancel")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 2: Quantity in kg
-  if (step === 2) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("batch_step", { current: 2, total: 4, name: selectedBeekeeper.name })}</span>
-            <StepTracker currentStep={2} totalSteps={4} />
+          <div style={{ marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-primary" onClick={() => setStep(2)}>
+              {t("batch_btn_to_qty")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("batch_q_qty")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-qty">
-            {t("batch_lbl_qty")}
-          </label>
-          <input
-            id="step-qty"
-            className="hc-input"
-            type="number"
-            step="0.1"
-            min="0.1"
+      {/* Step 2: Quantity in kg */}
+      {step === 2 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_qty")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_qty")}</label>
+          <input 
+            type="number" 
+            step="0.5" 
+            className="hc-input" 
             placeholder={t("batch_ph_qty")}
-            value={quantityKg}
-            onChange={(e) => setQuantityKg(e.target.value)}
+            value={quantity} 
+            onChange={(e) => setQuantity(e.target.value)} 
             autoFocus
           />
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={!quantityKg || Number(quantityKg) <= 0}
-            onClick={() => setStep(3)}
-          >
-            <span>{t("batch_btn_to_quality")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(1)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 3: Quality Test Result
-  if (step === 3) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("batch_step", { current: 3, total: 4, name: selectedBeekeeper.name })}</span>
-            <StepTracker currentStep={3} totalSteps={4} />
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(1)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={!quantity || Number(quantity) <= 0} onClick={() => setStep(3)}>
+              {t("batch_btn_to_quality")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("batch_q_quality")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-quality">
-            {t("batch_lbl_quality")}
-          </label>
-          <select
-            id="step-quality"
-            className="hc-select"
-            value={qualityResult}
-            onChange={(e) => setQualityResult(e.target.value)}
-            autoFocus
+      {/* Step 3: Quality Test */}
+      {step === 3 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_quality")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_quality")}</label>
+          <select 
+            className="hc-select" 
+            value={qualityGrade} 
+            onChange={(e) => setQualityGrade(e.target.value)}
           >
             <option value="Good">{t("batch_opt_good")}</option>
             <option value="Average">{t("batch_opt_avg")}</option>
-            <option value="Needs Retest">{t("batch_opt_retest")}</option>
+            <option value="Retest">{t("batch_opt_retest")}</option>
           </select>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            onClick={() => setStep(4)}
-          >
-            <span>{t("batch_btn_to_loc")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(2)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // Step 4: Apiary Location
-  if (step === 4) {
-    return (
-      <div className="hc-screen-container">
-        <header className="hc-header">
-          <div className="hc-header-row">
-            <span className="hc-text-muted">{t("batch_step", { current: 4, total: 4, name: selectedBeekeeper.name })}</span>
-            <StepTracker currentStep={4} totalSteps={4} />
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(2)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" onClick={() => setStep(4)}>
+              {t("batch_btn_to_loc")}
+            </button>
           </div>
-          <h1 className="hc-h1" style={{ marginTop: "4px" }}>{t("batch_q_loc")}</h1>
-        </header>
+        </div>
+      )}
 
-        <main className="hc-content">
-          <label className="hc-label" htmlFor="step-loc">
-            {t("batch_lbl_loc")}
-          </label>
-          <input
-            id="step-loc"
-            className="hc-input"
-            type="text"
-            placeholder={t("batch_ph_loc")}
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            autoFocus
+      {/* Step 4: Confirm Location & Submit */}
+      {step === 4 && (
+        <div>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "0 0 8px 0" }}>{t("batch_q_loc")}</h2>
+          <label className="hc-provenance-label" style={{ display: "block", marginBottom: 6 }}>{t("batch_lbl_loc")}</label>
+          <input 
+            type="text" 
+            className="hc-input" 
+            value={location} 
+            onChange={(e) => setLocation(e.target.value)} 
           />
-          <p className="hc-text-muted" style={{ marginTop: "12px", marginBottom: 0 }}>
-            {t("batch_help_loc")}
-          </p>
-        </main>
-
-        <footer className="hc-footer-action hc-stack-sm">
-          <button
-            className="hc-button-primary"
-            type="button"
-            disabled={!location.trim()}
-            onClick={handleFinalSubmit}
-          >
-            <span>{t("batch_btn_submit")}</span>
-            <svg className="hc-icon" viewBox="0 0 24 24">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </button>
-
-          <button
-            className="hc-button-text"
-            type="button"
-            onClick={() => setStep(3)}
-          >
-            <span>{t("reg_btn_back")}</span>
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-// --- 4. "My Batches" Page (Simple Vertical List, No Cards, Verified on Chain Indicator) ---
-function MyBatchesPage() {
-  const { batches, activeBeekeeper, navigate, t } = useHoneyChain();
-  const [selectedBatchForQR, setSelectedBatchForQR] = useState(null);
-  const [chainValid, setChainValid] = useState(true);
-  const modalQrRef = useRef(null);
-
-  // Run chain verification on mount / batches update
-  useEffect(() => {
-    async function checkChainIntegrity() {
-      if (window.HoneyChainHash) {
-        const audit = await window.HoneyChainHash.verifyChain(batches);
-        setChainValid(audit.isValid);
-      }
-    }
-    checkChainIntegrity();
-  }, [batches]);
-
-  // Generate QR in Modal when a batch is chosen for viewing
-  useEffect(() => {
-    if (selectedBatchForQR && modalQrRef.current) {
-      modalQrRef.current.innerHTML = "";
-      if (window.QRCode) {
-        new window.QRCode(modalQrRef.current, {
-          text: `https://honeychain.org/verify?batch=${selectedBatchForQR.batchId}`,
-          width: 190,
-          height: 190,
-          colorDark: "#3A2E26",
-          colorLight: "#FFFFFF",
-          correctLevel: window.QRCode.CorrectLevel.H
-        });
-      }
-    }
-  }, [selectedBatchForQR]);
-
-  const handleDownloadModalQR = () => {
-    if (!modalQrRef.current || !selectedBatchForQR) return;
-    const canvas = modalQrRef.current.querySelector("canvas");
-    const img = modalQrRef.current.querySelector("img");
-
-    let dataUrl = "";
-    if (canvas) {
-      dataUrl = canvas.toDataURL("image/png");
-    } else if (img && img.src) {
-      dataUrl = img.src;
-    }
-
-    if (dataUrl) {
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `HoneyChain_QR_${selectedBatchForQR.batchId}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-  };
-
-  // Filter batches belonging exclusively to the current active verified beekeeper
-  const beekeeperBatches = batches.filter(
-    (b) => activeBeekeeper && b.beekeeperId === activeBeekeeper.id
-  );
-
-  return (
-    <div className="hc-screen-container">
-      <header className="hc-header">
-        <span className="hc-tagline">{t("my_batches_tagline")}</span>
-        <h1 className="hc-h1" style={{ marginTop: "4px" }}>
-          {t("my_batches_title")}
-        </h1>
-        <p className="hc-body" style={{ marginBottom: "6px" }}>
-          {t("my_batches_desc")}
-        </p>
-        {activeBeekeeper && (
-          <p className="hc-text-muted" style={{ fontWeight: 600 }}>
-            {t("my_batches_active_bk")}: {activeBeekeeper.name} ({activeBeekeeper.id}) • {activeBeekeeper.village}
-          </p>
-        )}
-      </header>
-
-      <main className="hc-content" style={{ justifyContent: "flex-start" }}>
-        {beekeeperBatches.length === 0 ? (
-          <div style={{ padding: "32px 0", textAlign: "center" }}>
-            <p className="hc-body">{t("my_batches_empty")}</p>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "8px 0" }}>{t("batch_help_loc")}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "var(--spacing-lg)" }}>
+            <button type="button" className="hc-button-secondary" onClick={() => setStep(3)}>{t("reg_btn_back")}</button>
+            <button type="button" className="hc-button-primary" disabled={isSealing || !location} onClick={handleSealBatch}>
+              {isSealing ? "Sealing in Firestore..." : t("batch_btn_submit")}
+            </button>
           </div>
-        ) : (
-          /* Simple Vertical List (Not Cards, No Boxes, No Shadows, No Tables, No Filters) */
-          <ul className="hc-batch-list">
-            {beekeeperBatches.map((batch) => {
-              const isVerified = chainValid && batch.verified;
-              return (
-                <li key={batch.batchId} className="hc-batch-list-item">
-                  <div className="hc-batch-header-row">
-                    <span className="hc-batch-title">{batch.batchId}</span>
-                    <span className="hc-batch-status-tag">
-                      {isVerified
-                        ? t("my_batches_status_verified")
-                        : t("my_batches_status_error")}
-                    </span>
-                  </div>
+        </div>
+      )}
 
-                  <div className="hc-batch-meta-grid">
-                    <div className="hc-batch-meta-line">
-                      <strong>{t("my_batches_lbl_date")}:</strong> {batch.harvestDate}
-                    </div>
-                    <div className="hc-batch-meta-line">
-                      <strong>{t("my_batches_lbl_qty")}:</strong> {batch.weightKg} kg
-                    </div>
-                    <div className="hc-batch-meta-line">
-                      <strong>{t("my_batches_lbl_quality")}:</strong> {batch.qualityResult || "Good"}
-                    </div>
-                  </div>
+      {/* Step 5: Sealed Batch & QR Code Screen */}
+      {step === 5 && sealedBatch && (
+        <div style={{ textAlign: "center", animation: "hcPopIn 0.35s ease" }}>
+          <span className="hc-tagline">{t("batch_sealed_badge")}</span>
+          <h2 style={{ fontSize: "var(--font-size-h2)", margin: "6px 0 12px 0" }}>{t("batch_sealed_title")}</h2>
+          <div className="hc-display-number hc-highlight">{sealedBatch.batchId}</div>
 
-                  {/* Small QR Line Icon + Text Button to Re-view & Re-download */}
-                  <button
-                    type="button"
-                    className="hc-batch-qr-btn"
-                    onClick={() => setSelectedBatchForQR(batch)}
-                    aria-label={`View QR code for batch ${batch.batchId}`}
-                  >
-                    <svg className="hc-icon" style={{ width: "20px", height: "20px" }} viewBox="0 0 24 24">
-                      <rect x="3" y="3" width="7" height="7"></rect>
-                      <rect x="14" y="3" width="7" height="7"></rect>
-                      <rect x="14" y="14" width="7" height="7"></rect>
-                      <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    <span>{t("my_batches_btn_view_qr")}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </main>
-
-      <footer className="hc-footer-action hc-stack-sm">
-        <button
-          className="hc-button-primary"
-          type="button"
-          onClick={() => navigate("batch-entry", { selectedBeekeeperId: activeBeekeeper?.id })}
-        >
-          <span>{t("my_batches_btn_record_new")}</span>
-          <svg className="hc-icon" viewBox="0 0 24 24">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
-
-        <button
-          className="hc-button-text"
-          type="button"
-          onClick={() => navigate("beekeeper-select")}
-        >
-          <span>{t("my_batches_btn_switch")}</span>
-        </button>
-      </footer>
-
-      {/* Re-View / Re-Download QR Code Modal */}
-      {selectedBatchForQR && (
-        <div className="hc-modal-backdrop" onClick={() => setSelectedBatchForQR(null)}>
-          <div className="hc-modal-content" onClick={(e) => e.stopPropagation()}>
-            <span className="hc-tagline">{selectedBatchForQR.batchId}</span>
-            <h2 className="hc-h2" style={{ marginTop: "4px" }}>
-              {t("qr_modal_title")}
-            </h2>
-            <p className="hc-text-muted" style={{ marginBottom: "16px" }}>
-              {selectedBatchForQR.harvestDate} • {selectedBatchForQR.weightKg} kg • {selectedBatchForQR.qualityResult}
+          {/* Generated QR Code Preview */}
+          <div className="hc-qr-wrapper">
+            {sealedBatch.qrCodeUrl?.startsWith("data:image") ? (
+              <img src={sealedBatch.qrCodeUrl} alt="Batch QR Code" style={{ width: 220, height: 220 }} />
+            ) : (
+              <div id="batch-sealed-qr" style={{ padding: 10 }}></div>
+            )}
+            <p style={{ fontSize: "0.95rem", color: "var(--color-text-muted)", margin: "8px 0 0 0" }}>
+              {t("batch_sealed_scan_help")}
             </p>
+          </div>
 
-            <div className="hc-qr-wrapper" ref={modalQrRef}>
-              {/* Dynamic QR injected here */}
-            </div>
-
-            <p className="hc-text-muted" style={{ fontSize: "16px", marginTop: "8px", marginBottom: "20px" }}>
-              {t("qr_modal_desc")}
-            </p>
-
-            <div className="hc-stack-xs">
-              <button
-                className="hc-button-primary"
-                type="button"
-                onClick={handleDownloadModalQR}
-              >
-                <span>{t("qr_modal_btn_download")}</span>
-                <svg className="hc-icon" viewBox="0 0 24 24">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-              </button>
-
-              <button
-                className="hc-button-text"
-                type="button"
-                onClick={() => setSelectedBatchForQR(null)}
-              >
-                <span>{t("qr_modal_btn_close")}</span>
-              </button>
-            </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "var(--spacing-md)" }}>
+            <a 
+              href={sealedBatch.qrCodeUrl} 
+              download={`HoneyChain-QR-${sealedBatch.batchId}.png`}
+              className="hc-button-primary"
+              style={{ textDecoration: "none" }}
+            >
+              📥 {t("batch_btn_download_qr")}
+            </a>
+            <button 
+              type="button" 
+              className="hc-button-secondary"
+              onClick={() => onComplete(sealedBatch)}
+            >
+              {t("batch_btn_view_my_batches")}
+            </button>
           </div>
         </div>
       )}
@@ -1559,263 +996,796 @@ function MyBatchesPage() {
   );
 }
 
-// --- 5. Beekeeper Profile Switcher / Login Page ---
-function BeekeeperSelectPage() {
-  const { beekeepers, activeBeekeeperId, setActiveBeekeeperId, navigate, t } = useHoneyChain();
-
-  const handleSelect = (id) => {
-    setActiveBeekeeperId(id);
-    navigate("my-batches");
-  };
-
-  return (
-    <div className="hc-screen-container">
-      <header className="hc-header">
-        <span className="hc-tagline">{t("select_bk_tagline")}</span>
-        <h1 className="hc-h1" style={{ marginTop: "4px" }}>
-          {t("select_bk_title")}
-        </h1>
-        <p className="hc-body">
-          {t("select_bk_desc")}
-        </p>
-      </header>
-
-      <main className="hc-content" style={{ justifyContent: "flex-start" }}>
-        <ul className="hc-provenance-list" style={{ marginTop: 0 }}>
-          {beekeepers.map((bk) => {
-            const isSelected = bk.id === activeBeekeeperId;
-            return (
-              <li
-                key={bk.id}
-                className="hc-provenance-item"
-                style={{
-                  cursor: "pointer",
-                  paddingBottom: "16px",
-                  borderBottom: "1.5px solid var(--color-border-input)"
-                }}
-                onClick={() => handleSelect(bk.id)}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <span className="hc-provenance-label">{bk.id} • {bk.village}</span>
-                    <div className="hc-provenance-value">{bk.name}</div>
-                  </div>
-                  {isSelected && (
-                    <span className="hc-highlight" style={{ fontSize: "16px" }}>Active ✓</span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </main>
-
-      <footer className="hc-footer-action hc-stack-sm">
-        <button
-          className="hc-button-primary"
-          type="button"
-          onClick={() => navigate("register")}
-        >
-          <span>{t("select_bk_register_new")}</span>
-        </button>
-
-        <button
-          className="hc-button-text"
-          type="button"
-          onClick={() => navigate("landing")}
-        >
-          <span>{t("select_bk_back_home")}</span>
-        </button>
-      </footer>
-    </div>
-  );
-}
-
-// --- 6. Consumer Lookup Page ---
-function ConsumerLookupPage() {
-  const { findBatch, batches, pageParams, t } = useHoneyChain();
-  const [searchQuery, setSearchQuery] = useState(pageParams.autoQuery || "");
-  const [searched, setSearched] = useState(Boolean(pageParams.autoQuery));
-  const [resultBatch, setResultBatch] = useState(() =>
-    pageParams.autoQuery ? findBatch(pageParams.autoQuery) : null
-  );
-  const [chainStatus, setChainStatus] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
+// ==========================================================================
+// 4. My Batches View
+// ==========================================================================
+function MyBatchesView({ activeBeekeeper, onRecordNew, onOpenQr, onNavigate }) {
+  const { t } = useTranslation();
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function auditChain() {
-      if (searched && resultBatch && window.HoneyChainHash) {
-        const audit = await window.HoneyChainHash.verifyChain(batches);
-        setChainStatus(audit.isValid ? t("lookup_chain_verified") : t("lookup_chain_error"));
+    async function loadBatches() {
+      setLoading(true);
+      try {
+        if (window.batchService) {
+          const list = await window.batchService.getBatchesByBeekeeper(activeBeekeeper?.beekeeperId || "BK-1042");
+          setBatches(list);
+        }
+      } catch (e) {
+        console.warn("Failed to load batches:", e);
+      } finally {
+        setLoading(false);
       }
     }
-    auditChain();
-  }, [searched, resultBatch, batches]);
+    loadBatches();
+  }, [activeBeekeeper]);
 
-  const handleLookup = async (e) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim()) return;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <span className="hc-tagline">{t("my_batches_tagline")}</span>
+          <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>{t("my_batches_title")}</h1>
+          <p style={{ color: "var(--color-text-muted)", margin: "4px 0" }}>
+            {activeBeekeeper?.name} ({activeBeekeeper?.beekeeperId}) • {activeBeekeeper?.farmLocation}
+          </p>
+        </div>
+      </div>
 
-    const res = findBatch(searchQuery);
-    setResultBatch(res);
-    setSearched(true);
-    setIsScanning(false);
+      <button type="button" className="hc-button-primary" onClick={onRecordNew}>
+        {t("my_batches_btn_record_new")}
+      </button>
 
-    if (window.HoneyChainHash) {
-      const audit = await window.HoneyChainHash.verifyChain(batches);
-      setChainStatus(audit.isValid ? t("lookup_chain_verified") : t("lookup_chain_error"));
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>⏳ Loading batches from Firestore...</div>
+      ) : batches.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 0", color: "var(--color-text-muted)" }}>
+          {t("my_batches_empty")}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px" }}>
+          {batches.map((batch) => (
+            <div 
+              key={batch.batchId} 
+              style={{
+                background: "var(--color-input-bg)",
+                border: "2.5px solid var(--color-border-input)",
+                borderRadius: 20,
+                padding: "16px 20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <strong style={{ fontSize: "1.35rem", color: "var(--color-accent)" }}>{batch.batchId}</strong>
+                <span className="hc-role-badge">{batch.status || "sealed"}</span>
+              </div>
+              <div style={{ fontSize: "0.95rem", color: "var(--color-text-muted)" }}>
+                📅 {t("my_batches_lbl_date")}: <strong>{batch.harvestDate}</strong> • ⚖️ {batch.quantity} kg • 🍯 Grade: {batch.qualityGrade}
+              </div>
+              <div style={{ fontSize: "0.85rem", wordBreak: "break-all", color: "var(--color-text-muted)" }}>
+                🔐 SHA-256: <code>{(batch.blockchainHash || "").slice(0, 24)}...</code>
+              </div>
+              <div style={{ display: "flex", gap: "10px", marginTop: "6px" }}>
+                <button 
+                  type="button" 
+                  className="hc-button-secondary" 
+                  style={{ minHeight: "44px", fontSize: "1rem", borderRadius: "14px" }}
+                  onClick={() => onOpenQr(batch)}
+                >
+                  📱 {t("my_batches_btn_view_qr")}
+                </button>
+                <button 
+                  type="button" 
+                  className="hc-button-secondary" 
+                  style={{ minHeight: "44px", fontSize: "1rem", borderRadius: "14px" }}
+                  onClick={() => {
+                    const url = `${window.location.origin}${window.location.pathname}?batchId=${batch.batchId}`;
+                    window.location.href = url;
+                  }}
+                >
+                  🔍 Verify View
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================================
+// 5. Consumer Verification & Provenance Lookup (Public / No Login Required)
+// ==========================================================================
+function ConsumerVerificationView({ initialCode = "", onNavigate }) {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState(initialCode || "HC-8842");
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const runVerification = async (codeToVerify) => {
+    const code = (codeToVerify || query).trim().toUpperCase();
+    if (!code) return;
+    setIsVerifying(true);
+    try {
+      if (window.verificationService) {
+        const result = await window.verificationService.verifyHoney(code, "manual_code");
+        setVerificationResult(result);
+      }
+    } catch (e) {
+      alert("Verification error: " + e.message);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  // Simulated Instant Scanner for Jar QR Code
-  const handleSimulateScan = () => {
-    setIsScanning(true);
-    setTimeout(() => {
-      const sampleId = batches[0]?.batchId || "HC-7109";
-      setSearchQuery(sampleId);
-      const res = findBatch(sampleId);
-      setResultBatch(res);
-      setSearched(true);
-      setIsScanning(false);
-    }, 1400);
+  useEffect(() => {
+    if (initialCode) {
+      runVerification(initialCode);
+    }
+  }, [initialCode]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      <span className="hc-tagline">Authentic Honey Origin</span>
+      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>{t("lookup_title")}</h1>
+      <p style={{ color: "var(--color-text-muted)" }}>{t("lookup_desc")}</p>
+
+      {/* Code Input */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <input 
+          type="text" 
+          className="hc-input" 
+          placeholder={t("lookup_ph_input")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button 
+          type="button" 
+          className="hc-button-primary"
+          style={{ width: "auto", minWidth: "140px" }}
+          disabled={isVerifying || !query.trim()}
+          onClick={() => runVerification(query)}
+        >
+          {isVerifying ? "Verifying..." : t("lookup_btn_track")}
+        </button>
+      </div>
+
+      {/* Sample Codes */}
+      <div style={{ fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
+        💡 {t("lookup_sample_codes")}{" "}
+        <button 
+          type="button" 
+          style={{ background: "none", border: "none", color: "var(--color-accent)", textDecoration: "underline", cursor: "pointer", fontWeight: 600 }}
+          onClick={() => { setQuery("HC-8842"); runVerification("HC-8842"); }}
+        >
+          HC-8842
+        </button>
+        {" | "}
+        <button 
+          type="button" 
+          style={{ background: "none", border: "none", color: "var(--color-accent)", textDecoration: "underline", cursor: "pointer", fontWeight: 600 }}
+          onClick={() => { setQuery("HC-7109"); runVerification("HC-7109"); }}
+        >
+          HC-7109
+        </button>
+      </div>
+
+      {/* Verification Result Display */}
+      {verificationResult && (
+        <div style={{ marginTop: "var(--spacing-md)", animation: "hcPopIn 0.3s ease" }}>
+          {verificationResult.found ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+              {/* Authenticity Banner */}
+              <div style={{ 
+                background: "var(--color-accent-light)", 
+                border: "2px solid var(--color-accent)", 
+                borderRadius: 20, 
+                padding: "16px 20px", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 14 
+              }}>
+                <span style={{ fontSize: "2.2rem" }}>✅</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.25rem", color: "var(--color-text)" }}>
+                    {t("lookup_chain_verified")}
+                  </h3>
+                  <span style={{ fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
+                    Verified in Firestore Ledger • Verification Log ID: {verificationResult.verificationId}
+                  </span>
+                </div>
+              </div>
+
+              {/* Provenance Details */}
+              <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
+                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8 }}>
+                  🍯 Honey Harvest Origin
+                </h3>
+
+                <ul className="hc-provenance-list" style={{ marginTop: 0 }}>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">{t("lookup_lbl_bk_name")}</span>
+                    <span className="hc-provenance-value">{verificationResult.batch.beekeeperName} {t("lookup_verified_aadhaar")}</span>
+                  </li>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">{t("lookup_lbl_apiary")}</span>
+                    <span className="hc-provenance-value">{verificationResult.batch.location}</span>
+                  </li>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">{t("lookup_lbl_date")}</span>
+                    <span className="hc-provenance-value">{verificationResult.batch.harvestDate}</span>
+                  </li>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">{t("lookup_lbl_qty")}</span>
+                    <span className="hc-provenance-value">{verificationResult.batch.quantity} Kilograms</span>
+                  </li>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">{t("lookup_lbl_quality")}</span>
+                    <span className="hc-provenance-value">{verificationResult.batch.qualityGrade}</span>
+                  </li>
+                  <li className="hc-provenance-item">
+                    <span className="hc-provenance-label">Cryptographic SHA-256 Seal</span>
+                    <span className="hc-provenance-value" style={{ fontSize: "0.85rem", wordBreak: "break-all" }}>
+                      <code>{verificationResult.batch.blockchainHash}</code>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Full Supply Chain Journey Timeline */}
+              <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
+                <h3 style={{ margin: "0 0 14px 0", fontSize: "1.25rem", borderBottom: "1.5px solid var(--color-border-input)", paddingBottom: 8 }}>
+                  🚚 Supply Chain Custody Timeline
+                </h3>
+
+                {verificationResult.timeline && verificationResult.timeline.length > 0 ? (
+                  <div className="hc-timeline">
+                    {verificationResult.timeline.map((evt, idx) => (
+                      <div key={evt.eventId || idx} className="hc-timeline-item">
+                        <div className="hc-timeline-title">{evt.action}</div>
+                        <div className="hc-timeline-meta">
+                          By <strong>{evt.actor}</strong> ({evt.actorRole}) • {new Date(evt.timestamp || evt.timestampIso).toLocaleDateString()}
+                        </div>
+                        <div className="hc-timeline-meta">📍 {evt.location}</div>
+                        {evt.notes && <div className="hc-timeline-notes">{evt.notes}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem" }}>
+                    Genesis batch record verified at apiary origin.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div style={{ 
+              background: "#FDEDEC", 
+              border: "2px solid #E74C3C", 
+              borderRadius: 20, 
+              padding: "20px", 
+              textAlign: "center" 
+            }}>
+              <span style={{ fontSize: "2.5rem" }}>⚠️</span>
+              <h3 style={{ color: "#922B21", margin: "6px 0" }}>{t("lookup_not_found_title")}</h3>
+              <p style={{ color: "#78281F", margin: 0 }}>
+                {t("lookup_not_found_desc", { query })}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================================
+// 6. Supply Chain Manager View (Distributor & Retailer Event Logger)
+// ==========================================================================
+function SupplyChainManagerView({ onNavigate, currentUser }) {
+  const [batchId, setBatchId] = useState("HC-8842");
+  const [actorName, setActorName] = useState(currentUser?.displayName || "Apex Cold-Chain Logistics");
+  const [actorRole, setActorRole] = useState("distributor"); // distributor | retailer | beekeeper
+  const [action, setAction] = useState("Cold-Chain Transit Dispatched");
+  const [location, setLocation] = useState("Regional Distribution Center, Bay 3");
+  const [notes, setNotes] = useState("Maintained at 22°C constant temperature. Quality seal intact.");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recentEvents, setRecentEvents] = useState([]);
+
+  const loadEvents = async () => {
+    if (window.supplyChainService) {
+      const list = await window.supplyChainService.getRecentEvents(10);
+      setRecentEvents(list);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const handleAddEvent = async (e) => {
+    e.preventDefault();
+    if (!batchId || !actorName || !action) return;
+
+    setIsSubmitting(true);
+    try {
+      await window.supplyChainService.addEvent({
+        batchId,
+        actor: actorName,
+        actorRole,
+        action,
+        location,
+        notes
+      });
+      alert(`✅ Supply chain milestone successfully logged in Firestore for batch ${batchId}!`);
+      setNotes("");
+      loadEvents();
+    } catch (err) {
+      alert("Error logging milestone: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="hc-screen-container">
-      <header className="hc-header">
-        <h1 className="hc-h1">{t("lookup_title")}</h1>
-        <p className="hc-body">
-          {t("lookup_desc")}
-        </p>
-      </header>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      <span className="hc-tagline">Logistics & Custody</span>
+      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Supply Chain Custody</h1>
+      <p style={{ color: "var(--color-text-muted)" }}>
+        Log cold-chain transit, laboratory quality gates, warehouse arrivals, and retail shelf placements in Firestore.
+      </p>
 
-      <main className="hc-content">
-        {/* Scanner Simulation Viewfinder */}
-        {isScanning ? (
-          <div className="hc-scanner-box">
-            <div className="hc-scanner-laser"></div>
-            <span className="hc-text-muted" style={{ fontWeight: 600 }}>{t("lookup_scanning_msg")}</span>
-          </div>
-        ) : (
-          <form onSubmit={handleLookup} className="hc-stack-sm">
-            <label className="hc-label" htmlFor="consumer-batch-input">
-              {t("lookup_lbl_input")}
-            </label>
-            <input
-              id="consumer-batch-input"
-              className="hc-input"
-              type="text"
-              placeholder={t("lookup_ph_input")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
+      {/* Form */}
+      <form onSubmit={handleAddEvent} style={{ 
+        background: "var(--color-input-bg)", 
+        border: "2.5px solid var(--color-border-input)", 
+        borderRadius: 20, 
+        padding: 20,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12
+      }}>
+        <div>
+          <label className="hc-provenance-label">Target Batch ID</label>
+          <input 
+            type="text" 
+            className="hc-input" 
+            value={batchId} 
+            onChange={(e) => setBatchId(e.target.value)} 
+            placeholder="e.g. HC-8842" 
+            required 
+          />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div>
+            <label className="hc-provenance-label">Actor / Company Name</label>
+            <input 
+              type="text" 
+              className="hc-input" 
+              value={actorName} 
+              onChange={(e) => setActorName(e.target.value)} 
+              required 
             />
-          </form>
-        )}
-
-        {/* Calm, Clean Vertical List (Not Cards, Not Boxes) */}
-        {searched && resultBatch && !isScanning && (
-          <ul className="hc-provenance-list">
-            <li className="hc-provenance-item">
-              <span className="hc-provenance-label">{t("lookup_lbl_bk_name")}</span>
-              <div className="hc-provenance-value hc-icon-text-pair">
-                <span>{resultBatch.beekeeperName}</span>
-                <span className="hc-text-muted" style={{ fontSize: "16px", fontWeight: "normal" }}>
-                  {t("lookup_verified_aadhaar")}
-                </span>
-              </div>
-            </li>
-
-            <li className="hc-provenance-item">
-              <span className="hc-provenance-label">{t("lookup_lbl_apiary")}</span>
-              <div className="hc-provenance-value">{resultBatch.village}</div>
-            </li>
-
-            <li className="hc-provenance-item">
-              <span className="hc-provenance-label">{t("lookup_lbl_date")}</span>
-              <div className="hc-provenance-value">{resultBatch.harvestDate}</div>
-            </li>
-
-            <li className="hc-provenance-item">
-              <span className="hc-provenance-label">{t("lookup_lbl_qty")}</span>
-              <div className="hc-provenance-value">{resultBatch.weightKg} kg</div>
-            </li>
-
-            <li className="hc-provenance-item">
-              <span className="hc-provenance-label">{t("lookup_lbl_quality")}</span>
-              <div className="hc-provenance-value">{resultBatch.qualityResult || "Good"}</div>
-            </li>
-
-            <li className="hc-provenance-item" style={{ marginTop: "8px" }}>
-              <span className="hc-provenance-label">{t("lookup_lbl_crypto")}</span>
-              <div className="hc-provenance-value" style={{ fontSize: "1.35rem" }}>
-                {chainStatus || t("lookup_chain_verified")}
-              </div>
-            </li>
-          </ul>
-        )}
-
-        {searched && !resultBatch && !isScanning && (
-          <div style={{ marginTop: "32px" }}>
-            <h2 className="hc-h2">{t("lookup_not_found_title")}</h2>
-            <p className="hc-body">
-              {t("lookup_not_found_desc", { query: searchQuery })}
-            </p>
-            <p className="hc-text-muted">
-              {t("lookup_sample_codes")}
-            </p>
           </div>
-        )}
-      </main>
+          <div>
+            <label className="hc-provenance-label">Role</label>
+            <select 
+              className="hc-select" 
+              value={actorRole} 
+              onChange={(e) => setActorRole(e.target.value)}
+            >
+              <option value="distributor">Distributor / Logistics</option>
+              <option value="retailer">Retailer / Supermarket</option>
+              <option value="beekeeper">Beekeeper / Apiary</option>
+              <option value="admin">Quality Inspector</option>
+            </select>
+          </div>
+        </div>
 
-      <footer className="hc-footer-action hc-stack-sm">
-        <button
+        <div>
+          <label className="hc-provenance-label">Milestone Action</label>
+          <select 
+            className="hc-select" 
+            value={action} 
+            onChange={(e) => setAction(e.target.value)}
+          >
+            <option value="Cold-Chain Transit Dispatched">Cold-Chain Transit Dispatched</option>
+            <option value="Received at Regional Distribution Hub">Received at Regional Distribution Hub</option>
+            <option value="NMR & C4 Sugar Lab Test Passed">NMR & C4 Sugar Lab Test Passed</option>
+            <option value="Placed on Retail Store Shelf">Placed on Retail Store Shelf</option>
+            <option value="Delivered to Consumer">Delivered to Consumer</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="hc-provenance-label">Location</label>
+          <input 
+            type="text" 
+            className="hc-input" 
+            value={location} 
+            onChange={(e) => setLocation(e.target.value)} 
+          />
+        </div>
+
+        <div>
+          <label className="hc-provenance-label">Inspection / Transport Notes</label>
+          <input 
+            type="text" 
+            className="hc-input" 
+            value={notes} 
+            onChange={(e) => setNotes(e.target.value)} 
+            placeholder="e.g. Temperature readings, moisture tests, seal numbers"
+          />
+        </div>
+
+        <button 
+          type="submit" 
           className="hc-button-primary"
-          type="button"
-          onClick={handleLookup}
-          disabled={!searchQuery.trim() || isScanning}
+          disabled={isSubmitting}
+          style={{ marginTop: 8 }}
         >
-          <span>{t("lookup_btn_track")}</span>
-          <svg className="hc-icon" viewBox="0 0 24 24">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
+          {isSubmitting ? "Writing to Firestore..." : "📝 Record Milestone in Chain"}
         </button>
+      </form>
 
-        <button
-          className="hc-button-text"
-          type="button"
-          onClick={handleSimulateScan}
-        >
-          <span>{t("lookup_btn_scan_demo")}</span>
-        </button>
-      </footer>
+      {/* Recent Activity */}
+      <div>
+        <h3 style={{ fontSize: "1.2rem", margin: "16px 0 8px 0" }}>Recent Supply Chain Milestones</h3>
+        <div className="hc-timeline">
+          {recentEvents.map((evt, idx) => (
+            <div key={evt.eventId || idx} className="hc-timeline-item">
+              <div className="hc-timeline-title">
+                <strong style={{ color: "var(--color-accent)" }}>{evt.batchId}</strong>: {evt.action}
+              </div>
+              <div className="hc-timeline-meta">
+                By <strong>{evt.actor}</strong> ({evt.actorRole}) • 📍 {evt.location}
+              </div>
+              {evt.notes && <div className="hc-timeline-notes">{evt.notes}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-// --- Main App Root ---
-function App() {
-  const { currentPage } = useHoneyChain();
+// ==========================================================================
+// 7. Admin Login View
+// ==========================================================================
+function AdminLoginView({ onSuccess, onCancel }) {
+  const [email, setEmail] = useState("admin@honeychain.org");
+  const [password, setPassword] = useState("admin123");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await window.authService.adminLogin(email, password);
+      onSuccess();
+    } catch (err) {
+      setError(err.message || "Invalid administrator credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="hc-app-wrapper">
-      <NavigationBar />
-      {currentPage === "landing" && <LandingPage />}
-      {currentPage === "register" && <BeekeeperRegistrationPage />}
-      {currentPage === "batch-entry" && <BatchEntryPage />}
-      {currentPage === "my-batches" && <MyBatchesPage />}
-      {currentPage === "beekeeper-select" && <BeekeeperSelectPage />}
-      {currentPage === "lookup" && <ConsumerLookupPage />}
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)", animation: "hcFadeIn 0.25s ease" }}>
+      <span className="hc-tagline">Security & Management</span>
+      <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Admin Portal Login</h1>
+      <p style={{ color: "var(--color-text-muted)" }}>
+        Sign in to view real-time system metrics, manage beekeeper identities, and inspect public verification audits.
+      </p>
+
+      {error && (
+        <div style={{ background: "#FDEDEC", color: "#922B21", padding: "12px 16px", borderRadius: 12 }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      <form onSubmit={handleLogin} style={{ 
+        background: "var(--color-input-bg)", 
+        border: "2.5px solid var(--color-border-input)", 
+        borderRadius: 20, 
+        padding: 20, 
+        display: "flex", 
+        flexDirection: "column", 
+        gap: 12 
+      }}>
+        <div>
+          <label className="hc-provenance-label">Admin Email</label>
+          <input 
+            type="text" 
+            className="hc-input" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+          />
+        </div>
+        <div>
+          <label className="hc-provenance-label">Password</label>
+          <input 
+            type="password" 
+            className="hc-input" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+          <button type="button" className="hc-button-secondary" onClick={onCancel}>Cancel</button>
+          <button type="submit" className="hc-button-primary" disabled={loading}>
+            {loading ? "Authenticating..." : "Sign In as Admin"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
 
-// Mount React Root
+// ==========================================================================
+// 8. Admin Dashboard View (Metrics, Verification Logs, User Management)
+// ==========================================================================
+function AdminDashboardView({ onNavigate, onOpenQr }) {
+  const [data, setData] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      if (window.adminService) {
+        const dashboard = await window.adminService.getDashboardMetrics();
+        const userList = await window.adminService.getAllUsers();
+        setData(dashboard);
+        setUsers(userList);
+      }
+    } catch (e) {
+      console.warn("Failed to load admin data:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  return (
+    <div className="hc-admin-dashboard" style={{ animation: "hcFadeIn 0.25s ease" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <span className="hc-tagline">Real-Time Ledger Intelligence</span>
+          <h1 style={{ fontSize: "var(--font-size-h1)", margin: "4px 0" }}>Admin Dashboard</h1>
+        </div>
+        <button 
+          type="button" 
+          className="hc-button-secondary"
+          style={{ width: "auto", minHeight: "44px", fontSize: "0.95rem", borderRadius: "14px" }}
+          onClick={refreshData}
+        >
+          🔄 Refresh
+        </button>
+      </div>
+
+      {loading || !data ? (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>⏳ Loading analytics from Firestore...</div>
+      ) : (
+        <>
+          {/* Key Metrics Grid */}
+          <div className="hc-admin-grid">
+            <div className="hc-stat-card">
+              <span className="hc-stat-label">Total Beekeepers</span>
+              <div className="hc-stat-number">{data.metrics.totalBeekeepers}</div>
+              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Verified via Aadhaar/OTP</span>
+            </div>
+
+            <div className="hc-stat-card">
+              <span className="hc-stat-label">Honey Batches</span>
+              <div className="hc-stat-number">{data.metrics.totalBatches}</div>
+              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Sealed with SHA-256</span>
+            </div>
+
+            <div className="hc-stat-card">
+              <span className="hc-stat-label">Harvest Volume</span>
+              <div className="hc-stat-number">{data.metrics.totalVolumeKg} <span style={{ fontSize: "1.2rem" }}>kg</span></div>
+              <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Pure Honey Tracked</span>
+            </div>
+
+            <div className="hc-stat-card">
+              <span className="hc-stat-label">Consumer Verifications</span>
+              <div className="hc-stat-number">{data.metrics.totalVerifications}</div>
+              <span style={{ fontSize: "0.85rem", color: "#1E8449", fontWeight: 600 }}>
+                {data.metrics.successRate}% Authentic Rate
+              </span>
+            </div>
+          </div>
+
+          {/* Verification Audit Logs */}
+          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>🔍 Real-Time Consumer Verification Audit Log</h3>
+            {data.recentVerifications && data.recentVerifications.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {data.recentVerifications.map((v, i) => (
+                  <div key={v.verificationId || i} style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center",
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                    background: v.result === "authentic" ? "var(--color-accent-light)" : "#FDEDEC"
+                  }}>
+                    <div>
+                      <strong style={{ color: "var(--color-text)" }}>Batch {v.batchId}</strong>
+                      <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginLeft: 10 }}>
+                        {new Date(v.verifiedAt || v.verifiedAtIso).toLocaleString()}
+                      </span>
+                    </div>
+                    <span className={`hc-role-badge ${v.result === "authentic" ? "retailer" : ""}`} style={{ fontSize: "0.85rem" }}>
+                      {v.result === "authentic" ? "✅ Authentic" : "⚠️ Not Found"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: "var(--color-text-muted)" }}>No verifications logged yet.</p>
+            )}
+          </div>
+
+          {/* Users & Roles Management */}
+          <div style={{ background: "var(--color-input-bg)", border: "2.5px solid var(--color-border-input)", borderRadius: 20, padding: 20 }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>👥 Registered Actors & Roles</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {users.map((u, i) => (
+                <div key={u.userId || i} style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center",
+                  padding: "10px 14px",
+                  borderBottom: "1px solid var(--color-border-input)"
+                }}>
+                  <div>
+                    <strong>{u.name}</strong>
+                    <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>{u.phone || u.email}</div>
+                  </div>
+                  <span className={`hc-role-badge ${u.role}`}>{u.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================================
+// 9. Batch QR Code Modal Component
+// ==========================================================================
+function BatchQrModal({ batch, onClose }) {
+  const { t } = useTranslation();
+  const verificationUrl = `${window.location.origin}${window.location.pathname}?batchId=${batch.batchId}`;
+
+  return (
+    <div className="hc-modal-overlay" onClick={onClose}>
+      <div className="hc-modal-content" onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ margin: "0 0 6px 0", fontSize: "1.4rem" }}>{t("qr_modal_title")}</h3>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", margin: "0 0 14px 0" }}>
+          Batch <strong>{batch.batchId}</strong> • {batch.beekeeperName}
+        </p>
+
+        <div className="hc-qr-wrapper" style={{ margin: "10px auto" }}>
+          {batch.qrCodeUrl?.startsWith("data:image") ? (
+            <img src={batch.qrCodeUrl} alt={`QR Code for ${batch.batchId}`} style={{ width: 220, height: 220 }} />
+          ) : (
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(verificationUrl)}`} 
+              alt="QR Code" 
+              style={{ width: 220, height: 220 }}
+            />
+          )}
+        </div>
+
+        <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", wordBreak: "break-all", margin: "8px 0 16px 0" }}>
+          🔐 <code>{batch.blockchainHash || "SHA-256 Sealed"}</code>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <a 
+            href={batch.qrCodeUrl || verificationUrl} 
+            download={`HoneyChain-${batch.batchId}.png`}
+            className="hc-button-primary"
+            style={{ textDecoration: "none" }}
+          >
+            📥 {t("qr_modal_btn_download")}
+          </a>
+          <button type="button" className="hc-button-secondary" onClick={onClose}>
+            {t("qr_modal_btn_close")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================================
+// 10. Firebase Configuration Modal
+// ==========================================================================
+function FirebaseConfigModal({ onClose }) {
+  const currentConfig = window.firebaseManager?.config || {};
+  const [apiKey, setApiKey] = useState(currentConfig.apiKey || "");
+  const [projectId, setProjectId] = useState(currentConfig.projectId || "");
+  const [authDomain, setAuthDomain] = useState(currentConfig.authDomain || "");
+  const [storageBucket, setStorageBucket] = useState(currentConfig.storageBucket || "");
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (window.firebaseManager) {
+      window.firebaseManager.saveConfig({
+        apiKey,
+        projectId,
+        authDomain,
+        storageBucket
+      });
+      alert("✅ Firebase configuration updated successfully! Refreshing backend connections.");
+      onClose();
+    }
+  };
+
+  return (
+    <div className="hc-modal-overlay" onClick={onClose}>
+      <div className="hc-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480, textAlign: "left" }}>
+        <h3 style={{ margin: "0 0 6px 0", fontSize: "1.3rem" }}>🔥 Firebase Configuration</h3>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: "0 0 14px 0" }}>
+          Enter your live Firebase Project credentials below to sync with your production Firebase Auth, Firestore & Storage.
+        </p>
+
+        <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div>
+            <label className="hc-provenance-label">API Key (apiKey)</label>
+            <input type="text" className="hc-input" value={apiKey} onChange={(e) => setApiKey(e.target.value)} required />
+          </div>
+          <div>
+            <label className="hc-provenance-label">Project ID (projectId)</label>
+            <input type="text" className="hc-input" value={projectId} onChange={(e) => setProjectId(e.target.value)} required />
+          </div>
+          <div>
+            <label className="hc-provenance-label">Auth Domain (authDomain)</label>
+            <input type="text" className="hc-input" value={authDomain} onChange={(e) => setAuthDomain(e.target.value)} />
+          </div>
+          <div>
+            <label className="hc-provenance-label">Storage Bucket (storageBucket)</label>
+            <input type="text" className="hc-input" value={storageBucket} onChange={(e) => setStorageBucket(e.target.value)} />
+          </div>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            <button type="button" className="hc-button-secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="hc-button-primary">Save & Connect</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================================
+// App Root Mount
+// ==========================================================================
 const rootElement = document.getElementById("root");
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <HoneyChainProvider>
-    <App />
-  </HoneyChainProvider>
-);
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <LanguageProvider>
+      <HoneyChainApp />
+    </LanguageProvider>
+  );
+}
