@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoneyChain Design System & Style Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Style Guide Presentation Wrapper */
+    .sg-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--spacing-xl) var(--spacing-md);
+    }
+    .sg-section {
+      margin-bottom: var(--spacing-2xl);
+    }
+    .sg-divider {
+      height: 1px;
+      background-color: var(--color-border-input);
+      border: none;
+      margin: var(--spacing-xl) 0;
+    }
+    .sg-color-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+    .sg-color-chip {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    .sg-swatch {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      border: 2px solid var(--color-border-input);
+      flex-shrink: 0;
+    }
+    .sg-screen-frame {
+      background-color: var(--color-bg);
+      border: 2px dashed var(--color-border-input);
+      border-radius: 24px;
+      padding: var(--spacing-lg) var(--spacing-md);
+      margin-top: var(--spacing-md);
+      max-width: 480px;
+    }
+    .sg-badge {
+      display: inline-block;
+      font-size: var(--font-size-sm);
+      color: var(--color-accent);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="sg-page">
+    
+    <!-- Title Section -->
+    <header class="sg-section">
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+        <img src="logo.svg" alt="HoneyChain Logo" width="48" height="48">
+        <div>
+          <span class="sg-badge" style="margin-bottom: 2px;">Design System Spec</span>
+          <h1 class="hc-h1" style="margin-bottom: 0;">HoneyChain Style Guide</h1>
+        </div>
+      </div>
+      <p class="hc-body">
+        Designed specifically for rural beekeepers with low digital literacy. Focused on extreme clarity, high contrast, zero cognitive clutter, and generous touch targets.
+      </p>
+    </header>
+
+    <hr class="sg-divider">
+
+    <!-- 1. Color Palette -->
+    <section class="sg-section">
+      <h2 class="hc-h2">1. Color Palette (Strict 3-Tone)</h2>
+      <p class="hc-body">
+        No blue, green, red, or multi-accent palettes. Every element uses milky white, warm orange, or dark charcoal brown.
+      </p>
+
+      <div class="sg-color-row">
+        <div class="sg-color-chip">
+          <div class="sg-swatch" style="background-color: #FDFBF7;"></div>
+          <div>
+            <strong>Milky White (#FDFBF7)</strong>
+            <div class="hc-text-muted">Primary background for all screens</div>
+          </div>
+        </div>
+
+        <div class="sg-color-chip">
+          <div class="sg-swatch" style="background-color: #E8892B;"></div>
+          <div>
+            <strong>Warm Orange (#E8892B)</strong>
+            <div class="hc-text-muted">Single accent color for primary buttons & highlights</div>
+          </div>
+        </div>
+
+        <div class="sg-color-chip">
+          <div class="sg-swatch" style="background-color: #3A2E26;"></div>
+          <div>
+            <strong>Dark Charcoal Brown (#3A2E26)</strong>
+            <div class="hc-text-muted">High-readability text & icon color</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sg-divider">
+
+    <!-- 2. Typography Scale -->
+    <section class="sg-section">
+      <h2 class="hc-h2">2. Typography Scale</h2>
+      <p class="hc-body">
+        One simple, large sans-serif font (<em>Plus Jakarta Sans</em>). Minimum 18px body text, 28px+ headings, with generous line spacing.
+      </p>
+
+      <div class="hc-stack-md" style="margin-top: var(--spacing-lg);">
+        <div>
+          <div class="hc-text-muted">Heading 1 (36px, Line-height 1.35)</div>
+          <div class="hc-h1">Record Today’s Honey</div>
+        </div>
+
+        <div>
+          <div class="hc-text-muted">Heading 2 (28px, Line-height 1.35)</div>
+          <div class="hc-h2">Select Hive Box Number</div>
+        </div>
+
+        <div>
+          <div class="hc-text-muted">Body Standard (20px, Line-height 1.65)</div>
+          <p class="hc-body">
+            Please enter the total weight of the honey harvested from this hive today.
+          </p>
+        </div>
+
+        <div>
+          <div class="hc-text-muted">Caption / Helper (18px Minimum)</div>
+          <p class="hc-text-muted">
+            Tap the large orange button below when you are finished.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sg-divider">
+
+    <!-- 3. Iconography Guidelines -->
+    <section class="sg-section">
+      <h2 class="hc-h2">3. Iconography (Line Icons + Text)</h2>
+      <p class="hc-body">
+        Line icons are used sparingly and <strong>always paired with text labels</strong>. Never display icon-only buttons or ambiguous symbols.
+      </p>
+
+      <div class="hc-stack-md" style="margin-top: var(--spacing-md);">
+        <div class="hc-icon-text-pair">
+          <svg class="hc-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="hc-body" style="margin-bottom: 0;">Morning Harvest</span>
+        </div>
+
+        <div class="hc-icon-text-pair">
+          <svg class="hc-icon" viewBox="0 0 24 24">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span class="hc-body" style="margin-bottom: 0;">Estimated Payment: ₹4,200</span>
+        </div>
+
+        <div class="hc-icon-text-pair">
+          <svg class="hc-icon" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span class="hc-body" style="margin-bottom: 0;">Batch Saved to HoneyChain</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sg-divider">
+
+    <!-- 4. Interactive Screen Example -->
+    <section class="sg-section">
+      <h2 class="hc-h2">4. Live Screen Layout Example</h2>
+      <p class="hc-body">
+        Demonstrates the rule: <em>One primary action per screen, no cards, no boxes, no shadows, generous whitespace</em>.
+      </p>
+
+      <div class="sg-screen-frame">
+        <div class="hc-screen-container" style="min-height: 520px; padding: var(--spacing-md) 0;">
+          
+          <header class="hc-header">
+            <span class="hc-text-muted">Step 2 of 3</span>
+            <h1 class="hc-h1" style="margin-top: 4px;">Harvest Weight</h1>
+          </header>
+
+          <div class="hc-content">
+            <label class="hc-label" for="sample-weight">Enter Honey Weight in Kilograms</label>
+            <input id="sample-weight" class="hc-input" type="number" placeholder="e.g. 24" value="24">
+            <p class="hc-text-muted" style="margin-top: var(--spacing-sm); margin-bottom: 0;">
+              Batch assigned to Hive #04 (Forest Site)
+            </p>
+          </div>
+
+          <div class="hc-footer-action hc-stack-sm">
+            <!-- Exactly ONE large primary button -->
+            <button class="hc-button-primary" type="button">
+              <span>Save & Continue</span>
+              <svg class="hc-icon" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <!-- Secondary unboxed action -->
+            <button class="hc-button-text" type="button">
+              <svg class="hc-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Go Back</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
